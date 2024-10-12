@@ -1,0 +1,35 @@
+{
+    "configurations": [
+        {
+            "name": "nnyy (Chrome)",
+            "program": "lib/main.dart",
+            "deviceId": "chrome",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "-d",
+                "chrome",
+                "--web-renderer",
+                "html",
+                "--web-port",
+                "80",
+            ]
+        },
+        {
+            "name": "nnyy release (Chrome)",
+            "program": "lib/main.dart",
+            "deviceId": "chrome",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "--release",
+                "-d",
+                "chrome",
+                "--web-renderer",
+                "html",
+                "--web-port",
+                "80",
+            ]
+        }
+    ]
+}

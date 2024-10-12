@@ -1,0 +1,542 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+
+import '../home/video_card.dart';
+import '../services/nnyy_data.dart';
+import '../widgets/get_snack_bar.dart';
+import '../widgets/nnyy_button.dart';
+import '../widgets/nnyy_checkbox.dart';
+import '../widgets/nnyy_duration_box.dart';
+import '../widgets/nnyy_toggle.dart';
+import '../widgets/nnyy_focus.dart';
+import 'video_controller.dart';
+import 'video_play.dart';
+import 'video_web.dart';
+
+class VideoView extends HookWidget {
+  const VideoView({super.key});
+
+  static void show(BuildContext context) {
+    Navigator.of(context, rootNavigator: true)
+        .push(MaterialPageRoute(builder: (_) => const VideoView()));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = VideoController.i;
+    useAutomaticKeepAlive();
+    useOnAppLifecycleStateChange((_, state) async {
+      if (state == AppLifecycleState.paused) controller.pause();
+    });
+    useValueChanged(controller.error.value, (_, void __) {
+      if (controller.error.value.isEmpty) return;
+      final messager = ScaffoldMessenger.of(context)..clearSnackBars();
+      final navigator = Navigator.of(context, rootNavigator: true);
+      Future(() async {
+        messager.showSnackBar(getSnackBar(Text(controller.error.value)));
+        controller.error.value = '';
+        await Future.delayed(Durations.extralong4 * 2);
+        navigator.pop();
+      });
+    });
+    useListenable(controller.detail);
+    useListenable(controller.player);
+    useListenable(controller.error);
+    return PopScope(
+      canPop: !controller.player.value,
+      onPopInvoked: (didPop) async {
+        if (didPop) {
+          controller.dispose();
+          NnyyData.saveAll();
+          return;
+        }
+        if (controller.ui.value) {
+          controller.ui.value = false;
+        } else {
+          controller.stop();
+          NnyyData.saveAll();
+        }
+      },
+      child: SafeArea(
+        child: Scaffold(
+          body: FocusTraversalGroup(
+            policy: ReadingOrderTraversalPolicy(
+              requestFocusCallback: (node,
+                      {alignment, alignmentPolicy, curve, duration}) =>
+                  FocusTraversalPolicy.defaultTraversalRequestFocusCallback(
+                node,
+                alignment: alignment,
+                alignmentPolicy: alignmentPolicy,
+                curve: curve,
+                duration: Durations.short4,
+              ),
+            ),
+            child: IndexedStack(
+              index: controller.player.value ? 1 : 0,
+              children: [
+                controller.detail.value == null
+                    ? const Center(child: CircularProgressIndicator())
+                    : MediaQuery.of(context).orientation ==
+                            Orientation.landscape
+                        ? const _VideoDetail()
+                        : const _VideoDetailV(),
+                const VideoPlay(),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _VideoDetail extends HookWidget {
+  const _VideoDetail();
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = VideoController.i;
+    final detail = controller.detail.value!;
+    useListenable(controller.detail);
+    useListenable(controller.ep);
+    return SingleChildScrollView(
+      child: Center(
+        child: SizedBox(
+          width: kIsWeb ? 1000 : null,
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(
+                width: 200,
+                child: Column(
+                  children: [
+                    _VideoCover(),
+                    _VideoInfo(),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const _VideoTitle(),
+                    ExcludeFocus(child: SelectableText(detail.intro)),
+                    const _VideoMeta(),
+                    if (kIsWeb) const _VideoWeb(),
+                    Visibility(
+                      visible: controller.sites.isNotEmpty,
+                      maintainState: true,
+                      child: const Column(
+                        children: [
+                          _VideoState(),
+                          _VideoSiteList(),
+                        ],
+                      ),
+                    ),
+                    const _VideoEpList(),
+                  ]
+                      .map((e) => Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          child: e))
+                      .toList(),
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _VideoDetailV extends HookWidget {
+  const _VideoDetailV();
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = VideoController.i;
+    final detail = controller.detail.value!;
+    useListenable(controller.detail);
+    useListenable(controller.ep);
+    return ListView(
+      children: [
+        const _VideoTitle(),
+        const Row(
+          children: [
+            SizedBox(width: 200, child: _VideoCover()),
+            Expanded(child: _VideoInfo()),
+          ],
+        ),
+        ExcludeFocus(child: SelectableText(detail.intro)),
+        const _VideoMeta(),
+        if (kIsWeb) const _VideoWeb(),
+        Visibility(
+          visible: controller.sites.isNotEmpty,
+          maintainState: true,
+          child: const Column(
+            children: [
+              _VideoState(),
+              _VideoSiteList(),
+            ],
+          ),
+        ),
+        const _VideoEpList(),
+      ]
+          .map((e) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: e))
+          .toList(),
+    );
+  }
+}
+
+class _VideoInfo extends HookWidget {
+  const _VideoInfo();
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = VideoController.i;
+    final detail = controller.detail.value!;
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: ExcludeFocus(
+        child: SelectionArea(
+          child: Table(
+            columnWidths: const {
+              0: FixedColumnWidth(48),
+              1: FlexColumnWidth(),
+            },
+            defaultVerticalAlignment: TableCellVerticalAlignment.top,
+            children: [
+              TableRow(
+                children: [
+                  const Text('導演：'),
+                  Text(detail.director),
+                ],
+              ),
+              TableRow(
+                children: [
+                  const Text('主演：'),
+                  Text(detail.starring),
+                ],
+              ),
+              TableRow(
+                children: [
+                  const Text('類型：'),
+                  Text(detail.genre),
+                ],
+              ),
+              TableRow(
+                children: [
+                  const Text('地區：'),
+                  Text(detail.country),
+                ],
+              ),
+              if (detail.alt.isNotEmpty)
+                TableRow(
+                  children: [
+                    const Text('又名：'),
+                    Text(detail.alt),
+                  ],
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _VideoCover extends HookWidget {
+  const _VideoCover();
+
+  @override
+  Widget build(BuildContext context) {
+    final detail = VideoController.i.detail.value!;
+    return SizedBox(
+      width: 200,
+      height: 300,
+      child: VideoCard.coverOnly(detail.info),
+    );
+  }
+}
+
+class _VideoTitle extends HookWidget {
+  const _VideoTitle();
+
+  @override
+  Widget build(BuildContext context) {
+    final detail = VideoController.i.detail.value!;
+    final year = detail.info.year;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const BackButton(),
+        ExcludeFocus(
+          child: SelectableText(
+            '${detail.info.title}${year == null ? '' : ' ($year)'}',
+            style: Theme.of(context)
+                .textTheme
+                .headlineLarge
+                ?.copyWith(fontWeight: FontWeight.bold),
+            textAlign: TextAlign.left,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _VideoWeb extends HookWidget {
+  const _VideoWeb();
+
+  @override
+  Widget build(BuildContext context) {
+    return AspectRatio(
+      aspectRatio: 16 / 9,
+      child: Focus(
+        focusNode: VideoController.i.focusWebPlayer,
+        canRequestFocus: false,
+        child: const VideoWeb(),
+      ),
+    );
+  }
+}
+
+class _VideoMeta extends HookWidget {
+  const _VideoMeta();
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = VideoController.i;
+    final info = controller.detail.value!.info;
+    final video = NnyyData.videos[info.id];
+    useListenable(video);
+    return NnyyFocusGroup(
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 4,
+        runSpacing: 4,
+        children: [
+          NnyyToggle(
+            value: video.fav,
+            onChanged: (v) {
+              video.title = info.title;
+              video.fav = v;
+              video.datetime = DateTime.now();
+              if (!v) video.removeFav();
+            },
+            activeColor: Colors.redAccent,
+            icon: Icons.favorite_border,
+            activeIcon: Icons.favorite,
+          ),
+          if (video.ep.isNotEmpty) ...[
+            const SizedBox(width: 8),
+            NnyyButton(
+              onPressed: () => controller.play(video.ep),
+              child: Text('繼續播放${video.ep}'),
+            ),
+            const SizedBox(width: 8),
+          ],
+          NnyyCheckbox(
+            label: '自動播放下一集',
+            value: video.next,
+            onChanged: (v) {
+              video.title = info.title;
+              video.next = v;
+              video.datetime = DateTime.now();
+            },
+          ),
+          NnyyDurationBox(
+              label: '跳過片頭',
+              value: Duration(seconds: video.skip),
+              onChanged: (v) {
+                video.title = info.title;
+                video.skip = v.inSeconds;
+                video.datetime = DateTime.now();
+              }),
+          const SizedBox(width: 8),
+          NnyyButton(
+            onPressed: () {
+              video.ep = '';
+              video.delete();
+              if (video.fav == false) {
+                Navigator.of(context, rootNavigator: true).pop();
+              }
+            },
+            child: const Text('刪除記錄'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _VideoState extends HookWidget {
+  const _VideoState();
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = VideoController.i;
+    final ep = controller.ep.value;
+    final state = switch (controller.state.value) {
+      VideoState.rest => '',
+      VideoState.loading => '正在載入$ep，可選擇其他播放線路：',
+      VideoState.ready => '$ep播放中，可選擇其他播放線路：',
+      VideoState.error => '載入$ep出錯，可選擇其他播放線路：',
+    };
+    useListenable(controller.ep);
+    useListenable(controller.state);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        switch (controller.state.value) {
+          VideoState.rest => const SizedBox.shrink(),
+          VideoState.loading => const SizedBox.square(
+              dimension: 12, child: CircularProgressIndicator(strokeWidth: 1)),
+          VideoState.ready =>
+            const Icon(Icons.play_arrow, size: 16, color: Colors.greenAccent),
+          VideoState.error =>
+            const Icon(Icons.error, size: 16, color: Colors.redAccent),
+        },
+        const SizedBox(width: 4),
+        Text(state, style: Theme.of(context).textTheme.titleMedium),
+      ],
+    );
+  }
+}
+
+class _VideoSiteList extends HookWidget {
+  const _VideoSiteList();
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = VideoController.i;
+    final sites = controller.sites.keys;
+    useListenable(controller.ep);
+    useListenable(controller.site);
+    return Center(
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: SegmentedButton(
+          style: SegmentedButton.styleFrom(
+              visualDensity: VisualDensity.compact,
+              shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(8)))),
+          segments: (sites.isEmpty ? [''] : [...sites])
+              .map((e) => ButtonSegment(value: e, label: Text(e)))
+              .toList(),
+          showSelectedIcon: false,
+          emptySelectionAllowed: true,
+          selected: {controller.site.value},
+          onSelectionChanged: (v) =>
+              controller.setSite(v.firstOrNull ?? controller.site.value),
+        ),
+      ),
+    );
+  }
+}
+
+class _VideoEpList extends HookWidget {
+  const _VideoEpList();
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = VideoController.i;
+    final detail = controller.detail.value!;
+    const itemsPrePage = 200;
+    final pages = (detail.eps.length / itemsPrePage).ceil();
+    final page = useState(0);
+    return NnyyFocusGroup(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Visibility(
+            visible: pages > 1,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SegmentedButton(
+                  style: SegmentedButton.styleFrom(
+                      visualDensity: VisualDensity.compact,
+                      shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(8)))),
+                  segments: List.generate(pages, (p) {
+                    return ButtonSegment(
+                        value: p,
+                        label: Text(
+                            '${p * itemsPrePage + 1} - ${(p + 1) * itemsPrePage}'));
+                  }),
+                  showSelectedIcon: false,
+                  emptySelectionAllowed: true,
+                  selected: {page.value},
+                  onSelectionChanged: (v) => page.value = v.firstOrNull ?? 0,
+                ),
+              ),
+            ),
+          ),
+          Center(
+            child: GridView.extent(
+              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              maxCrossAxisExtent: 112,
+              childAspectRatio: 112 / 36,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              children: detail.eps.keys
+                  .skip(page.value * itemsPrePage)
+                  .map((e) => _EpButton(key: Key(e), e))
+                  .take(itemsPrePage)
+                  .toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EpButton extends HookWidget {
+  const _EpButton(this.ep, {super.key});
+
+  final String ep;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = VideoController.i;
+    final detail = controller.detail.value!;
+    final progress = NnyyData.videos[detail.info.id].progress[ep];
+    final playVideo = useCallback(() {
+      if (kIsWeb) {
+        Scrollable.ensureVisible(
+          controller.focusWebPlayer.context!,
+          alignment: 0.9,
+          alignmentPolicy: ScrollPositionAlignmentPolicy.explicit,
+          duration: Durations.short4,
+          curve: Curves.ease,
+        );
+      }
+      return controller.play(ep);
+    });
+    useListenable(progress);
+    final selected =
+        useListenableSelector(controller.ep, () => controller.ep.value == ep);
+    return NnyyButton(
+      selected: selected,
+      onPressed: playVideo,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(ep, maxLines: 1, overflow: TextOverflow.ellipsis),
+          LinearProgressIndicator(value: progress.data.value, minHeight: 2),
+        ],
+      ),
+    );
+  }
+}
