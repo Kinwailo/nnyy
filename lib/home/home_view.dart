@@ -69,17 +69,23 @@ class HomeView extends HookWidget {
         child: SafeArea(
           child: Scaffold(
             appBar: AppBar(
-              title: const SingleChildScrollView(
+              title: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                child: _Filter(),
+                child: Opacity(
+                    opacity: home.canPop.value ? 1.0 : 0.3,
+                    child: const _Filter()),
               ),
-              backgroundColor: colorScheme.onPrimaryFixed,
+              backgroundColor: colorScheme.onPrimaryFixed
+                  .withOpacity(home.canPop.value ? 1.0 : 0.3),
               actions: [
-                Padding(
-                  padding: const EdgeInsets.all(4),
-                  child: SizedBox.square(
-                    dimension: 40,
-                    child: NnyyData.googleDriveStorage.signInAvatar(),
+                Opacity(
+                  opacity: home.canPop.value ? 1.0 : 0.3,
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: SizedBox.square(
+                      dimension: 40,
+                      child: NnyyData.googleDriveStorage.signInAvatar(),
+                    ),
                   ),
                 ),
               ],
