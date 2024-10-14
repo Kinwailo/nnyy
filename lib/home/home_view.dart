@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
@@ -72,14 +73,14 @@ class HomeView extends HookWidget {
               title: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Opacity(
-                    opacity: home.canPop.value ? 1.0 : 0.3,
+                    opacity: kIsWeb || home.canPop.value ? 1.0 : 0.3,
                     child: const _Filter()),
               ),
               backgroundColor: colorScheme.onPrimaryFixed
-                  .withOpacity(home.canPop.value ? 1.0 : 0.3),
+                  .withOpacity(kIsWeb || home.canPop.value ? 1.0 : 0.3),
               actions: [
                 Opacity(
-                  opacity: home.canPop.value ? 1.0 : 0.3,
+                  opacity: kIsWeb || home.canPop.value ? 1.0 : 0.3,
                   child: Padding(
                     padding: const EdgeInsets.all(4),
                     child: SizedBox.square(
