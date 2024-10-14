@@ -14,7 +14,7 @@ class HomeController {
   static HomeController get i => _instance ??= HomeController._();
 
   final filterFocus = FocusNode(skipTraversal: true);
-  final canPop = ValueNotifier(false);
+  final canPop = ValueNotifier(true);
   final videoList = ValueNotifier<List<VideoInfo>>([]);
   final error = ValueNotifier('');
 
