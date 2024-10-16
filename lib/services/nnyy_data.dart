@@ -28,7 +28,7 @@ class NnyyData extends ChangeNotifier {
   static ValueListenable<bool> get syncRequired => _syncRequired;
 
   late final _mode =
-      StoreValue(name, 'mode', HomeController.modeFilter, cloud: cloud);
+      StoreValue(name, 'mode', HomeController.kindMap.keys.first, cloud: cloud);
   late final _sort =
       StoreValue(name, 'sort', HomeController.sortList.first, cloud: cloud);
   late final _genre =

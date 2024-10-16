@@ -128,7 +128,7 @@ class _Filter extends HookWidget {
               onSelectionChanged: (v) => NnyyData.data.mode = v.first,
             ),
             const SizedBox(width: 16),
-            if (NnyyData.data.mode == HomeController.modeFilter) ...[
+            if (HomeController.kindMap.containsKey(NnyyData.data.mode)) ...[
               const Text('排序'),
               const SizedBox(width: 16),
               SegmentedButton(
