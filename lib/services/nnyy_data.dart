@@ -27,7 +27,8 @@ class NnyyData extends ChangeNotifier {
   static final _syncRequired = ValueNotifier(false);
   static ValueListenable<bool> get syncRequired => _syncRequired;
 
-  late final _history = StoreValue(name, 'history', false, cloud: cloud);
+  late final _mode =
+      StoreValue(name, 'mode', HomeController.modeFilter, cloud: cloud);
   late final _sort =
       StoreValue(name, 'sort', HomeController.sortList.first, cloud: cloud);
   late final _genre =
@@ -50,8 +51,8 @@ class NnyyData extends ChangeNotifier {
     return base64.encode(gzip.encode(utf8.encode(json.encode(v))));
   });
 
-  bool get history => _history.value;
-  set history(bool v) => _history.value = v;
+  String get mode => _mode.value;
+  set mode(String v) => _mode.value = v;
   String get sort => _sort.value;
   set sort(String v) => _sort.value = v;
   String get genre => _genre.value;

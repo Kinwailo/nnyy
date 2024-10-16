@@ -18,14 +18,25 @@ class HomeController {
   final videoList = ValueNotifier<List<VideoInfo>>([]);
   final error = ValueNotifier('');
 
-  var _noMore = false;
-  var _page = 0;
   var _kind = VideoService.dianshijuPath;
   var _search = '';
-  var _param = <String, dynamic>{};
-  final _list = <VideoInfo>[];
+  final _noMore = List.filled(3, false);
+  final _page = List.filled(3, 0);
+  final _param = List.generate(3, (_) => <String, dynamic>{});
+  final _list = List.generate(3, (_) => <VideoInfo>[]);
 
-  bool get noMore => _noMore;
+  int get modeIndex => modeList.indexOf(NnyyData.data.mode);
+  bool get noMore => _noMore[modeIndex];
+  String get search => _search;
+
+  static final modeList = [
+    modeHistory,
+    modeFilter,
+    modeSearch,
+  ];
+  static const modeHistory = '記錄';
+  static const modeFilter = '篩選';
+  static const modeSearch = '搜尋';
 
   static final sortMap = {
     '時間': '',
@@ -95,41 +106,54 @@ class HomeController {
     reloadVideoList();
   }
 
+  void clearSearch() async {
+    _kind = VideoService.searchPath;
+    _search = '';
+    reloadVideoList();
+  }
+
   void reloadVideoList() async {
-    var param = _search.isNotEmpty
-        ? {'kind': _kind, 'q': _search}
-        : {
-            'kind': VideoService.dianshijuPath,
-            'ob': sortMap[NnyyData.data.sort],
-            'genre': genreMap[NnyyData.data.genre],
-            'country': countryMap[NnyyData.data.country],
-            'year': yearMap[NnyyData.data.year],
-          };
-    if (!mapEquals(param, _param)) {
-      _param = param;
-      _noMore = false;
-      _page = 0;
-      _search = '';
-      _list.clear();
+    var param = switch (NnyyData.data.mode) {
+      modeSearch => {'kind': _kind, 'q': _search},
+      modeFilter => {
+          'kind': VideoService.dianshijuPath,
+          'ob': sortMap[NnyyData.data.sort],
+          'genre': genreMap[NnyyData.data.genre],
+          'country': countryMap[NnyyData.data.country],
+          'year': yearMap[NnyyData.data.year],
+        },
+      String() => {'key': UniqueKey()},
+    };
+    if (!mapEquals(param, _param[modeIndex])) {
+      _param[modeIndex] = param;
+      _noMore[modeIndex] = NnyyData.data.mode == modeHistory ||
+              (NnyyData.data.mode == modeSearch && _search.isEmpty)
+          ? true
+          : false;
+      _page[modeIndex] = 0;
+      _list[modeIndex].clear();
     }
-    videoList.value = NnyyData.data.history ? loadHistory() : [..._list];
+    videoList.value = switch (NnyyData.data.mode) {
+      modeHistory => loadHistory(),
+      modeSearch when _search.isEmpty => [],
+      String() => [..._list[modeIndex]],
+    };
   }
 
   void moreVideoList() async {
-    if (_noMore) return;
-    _page++;
+    if (_noMore[modeIndex]) return;
+    _page[modeIndex]++;
     var list = await loadVideoList();
-    if (NnyyData.data.history) return;
-    _noMore = list.isEmpty;
-    _list.addAll(list);
-    videoList.value = [..._list];
+    _noMore[modeIndex] = list.isEmpty;
+    _list[modeIndex].addAll(list);
+    videoList.value = [..._list[modeIndex]];
   }
 
   Future<List<VideoInfo>> loadVideoList() async {
     try {
       final param = {
-        ..._param,
-        if (_page != 1) 'page': '$_page',
+        ..._param[modeIndex],
+        if (_page[modeIndex] != 1) 'page': '${_page[modeIndex]}',
       };
       return await VideoService.i.getVideoList(param);
     } catch (e) {

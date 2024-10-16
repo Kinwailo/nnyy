@@ -7,12 +7,14 @@ import 'nnyy_focus.dart';
 class NnyySearchBox extends HookWidget {
   const NnyySearchBox({
     super.key,
+    this.text = '',
     this.width,
     this.height,
     this.onSearch,
     this.onClear,
   });
 
+  final String text;
   final double? width;
   final double? height;
   final void Function(String value)? onSearch;
@@ -22,6 +24,10 @@ class NnyySearchBox extends HookWidget {
   Widget build(BuildContext context) {
     final style = IconButton.styleFrom(visualDensity: VisualDensity.compact);
     final search = useSearchController();
+    useEffect(() {
+      search.text = text;
+      return null;
+    }, []);
     final empty = useListenableSelector(search, () => search.text.isEmpty);
     final cursorAt = useCallback((int i) =>
         search.selection.baseOffset == i && search.selection.extentOffset == i);

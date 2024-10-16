@@ -5,7 +5,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import '../services/nnyy_data.dart';
 import '../services/save_strategy.dart';
 import '../widgets/get_snack_bar.dart';
-import '../widgets/nnyy_button.dart';
 import '../widgets/nnyy_search_box.dart';
 import '../widgets/nnyy_focus.dart';
 import 'home_controller.dart';
@@ -116,13 +115,20 @@ class _Filter extends HookWidget {
         child: Row(
           children: [
             const SizedBox(width: 8),
-            NnyyButton.toggle(
-              selected: NnyyData.data.history,
-              onChanged: (v) => NnyyData.data.history = v,
-              child: const Text('觀看記錄'),
+            SegmentedButton(
+              style: SegmentedButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                  shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(8)))),
+              segments: HomeController.modeList
+                  .map((e) => ButtonSegment(value: e, label: Text(e)))
+                  .toList(),
+              showSelectedIcon: false,
+              selected: {NnyyData.data.mode},
+              onSelectionChanged: (v) => NnyyData.data.mode = v.first,
             ),
-            if (!NnyyData.data.history) ...[
-              const SizedBox(width: 16),
+            const SizedBox(width: 16),
+            if (NnyyData.data.mode == HomeController.modeFilter) ...[
               const Text('排序'),
               const SizedBox(width: 16),
               SegmentedButton(
@@ -182,14 +188,15 @@ class _Filter extends HookWidget {
                   if (v != null) NnyyData.data.year = v;
                 },
               ),
-              const SizedBox(width: 8),
+            ],
+            if (NnyyData.data.mode == HomeController.modeSearch)
               NnyySearchBox(
+                text: HomeController.i.search,
                 width: 200,
                 height: 32,
                 onSearch: home.searchVideo,
-                onClear: home.reloadVideoList,
+                onClear: home.clearSearch,
               ),
-            ],
           ],
         ),
       ),
@@ -226,8 +233,8 @@ class _Grid extends HookWidget {
                         ? VideoCard(home.videoList.value[index])
                         : MoreCard(key: UniqueKey());
                   },
-                  childCount: home.videoList.value.length +
-                      (home.noMore || NnyyData.data.history ? 0 : 1),
+                  childCount:
+                      home.videoList.value.length + (home.noMore ? 0 : 1),
                 ),
               ),
             ),
