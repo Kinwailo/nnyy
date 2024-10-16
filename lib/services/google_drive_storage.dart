@@ -72,10 +72,7 @@ class GoogleDriveStorage extends CloudStorage with ChangeNotifier {
         return;
       }
       bool auth = true;
-      if (kIsWeb) {
-        auth = await _googleSignIn.canAccessScopes(_scopes);
-        if (!auth) auth = await _googleSignIn.requestScopes(_scopes);
-      }
+      if (kIsWeb) auth = await _checkAccess();
       if (auth) {
         try {
           final client = await _googleSignIn.authenticatedClient();
@@ -88,6 +85,12 @@ class GoogleDriveStorage extends CloudStorage with ChangeNotifier {
       if (!auth) await signOut();
       if (auth) notifyListeners();
     });
+  }
+
+  Future<bool> _checkAccess() async {
+    var auth = await _googleSignIn.canAccessScopes(_scopes);
+    if (!auth) auth = await _googleSignIn.requestScopes(_scopes);
+    return auth;
   }
 
   Widget circleAvatar() {
@@ -186,6 +189,8 @@ class GoogleDriveStorage extends CloudStorage with ChangeNotifier {
 
   @override
   Future<Map<String, Map<String, dynamic>>> read() async {
+    if (!await _checkAccess()) return {};
+
     _syncing.value = true;
     try {
       final id = await _getFileId();
@@ -212,6 +217,8 @@ class GoogleDriveStorage extends CloudStorage with ChangeNotifier {
 
   @override
   Future<void> write(Map<String, Map<String, dynamic>> data) async {
+    if (!await _checkAccess()) return;
+
     final id = await _getFileId();
     if (_driveApi == null || id == null) return;
     _syncing.value = true;
@@ -225,6 +232,8 @@ class GoogleDriveStorage extends CloudStorage with ChangeNotifier {
 
   @override
   Future<void> delete() async {
+    if (!await _checkAccess()) return;
+
     _syncing.value = false;
     try {
       final id = await _getFileId();

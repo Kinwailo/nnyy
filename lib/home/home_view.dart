@@ -35,8 +35,8 @@ class HomeView extends HookWidget {
       });
     });
     useValueChanged(SaveStrategy.i.syncingOnExit.value, (_, void __) {
-      if (!SaveStrategy.i.syncingOnExit.value) return;
       final messager = ScaffoldMessenger.of(context)..clearSnackBars();
+      if (!SaveStrategy.i.syncingOnExit.value) return;
       const widget = Row(
         mainAxisSize: MainAxisSize.min,
         children: [

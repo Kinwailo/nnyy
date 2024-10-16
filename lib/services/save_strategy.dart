@@ -142,6 +142,7 @@ class SaveStrategy implements PopEntry {
   }
 
   Future<void> _syncOnExit({bool pop = false, bool exit = false}) async {
+    if (i._syncingOnExit.value) return;
     i._syncingOnExit.value = true;
     await _sync();
     i._syncingOnExit.value = false;
