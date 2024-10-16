@@ -119,7 +119,7 @@ class _VideoTitle extends HookWidget {
       child: Row(
         children: [
           ExcludeFocus(
-            child: BackButton(onPressed: () => controller.player.value = false),
+            child: BackButton(onPressed: controller.exitVideoPlayer),
           ),
           Text(
             '${detail!.info.title} $ep',

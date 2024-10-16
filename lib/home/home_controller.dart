@@ -14,9 +14,13 @@ class HomeController {
   static HomeController get i => _instance ??= HomeController._();
 
   final filterFocus = FocusNode(skipTraversal: true);
+
   final canPop = ValueNotifier(true);
-  final videoList = ValueNotifier<List<VideoInfo>>([]);
-  final error = ValueNotifier('');
+  final _videoList = ValueNotifier<List<VideoInfo>>([]);
+  final _error = ValueNotifier('');
+
+  ValueListenable<List<VideoInfo>> get videoList => _videoList;
+  ValueListenable<String> get error => _error;
 
   var _kind = VideoService.dianshijuPath;
   var _search = '';
@@ -28,31 +32,34 @@ class HomeController {
   bool get noMore => _noMore[modeIndex];
   String get search => _search;
 
-  static final modeList = [
+  static final _modeList = [
     modeHistory,
     ...kindMap.keys,
     modeSearch,
   ];
+  static List<String> get modeList => List.unmodifiable(_modeList);
   static const modeHistory = '記錄';
   static const modeSearch = '搜尋';
   static int get modeIndex => modeList.indexOf(NnyyData.data.mode);
 
-  static final kindMap = {
+  static final _kindMap = {
     '劇集': VideoService.dianshijuPath,
     '電影': VideoService.dianyingPath,
     '綜藝': VideoService.zongyiPath,
     '動畫': VideoService.dongmanPath,
   };
-  static List<String> get kindList => kindMap.keys.toList();
+  static Map<String, String> get kindMap => Map.unmodifiable(_kindMap);
+  static List<String> get kindList => List.unmodifiable(kindMap.keys);
 
-  static final sortMap = {
+  static final _sortMap = {
     '時間': '',
     '人氣': 'click',
     '評分': 'rating',
   };
-  static List<String> get sortList => sortMap.keys.toList();
+  static Map<String, String> get sortMap => Map.unmodifiable(_sortMap);
+  static List<String> get sortList => List.unmodifiable(sortMap.keys);
 
-  static final genreMap = {
+  static final _genreMap = {
     '全部': '',
 //
     '劇情': 'ju-qing',
@@ -98,6 +105,7 @@ class HomeController {
     '治癒': 'zhi-yu',
     '經典': 'jing-dian',
   };
+  static Map<String, String> get genreMap => Map.unmodifiable(_genreMap);
   static final _genreList = {
     '劇集': '全部 劇情 愛情 喜劇 懸疑 犯罪 古裝 奇幻 驚悚 科幻 家庭 動作 歷史 青春 搞笑 推理 戰爭 人性 女性 同性 武俠',
     '電影': '全部 劇情 喜劇 愛情 動作 驚悚 犯罪 懸疑 恐怖 科幻 奇幻 傳記 戰爭 家庭 冒險 人性 青春 歷史 文藝 溫情 搞笑',
@@ -105,9 +113,9 @@ class HomeController {
     '動畫': '全部 喜劇 奇幻 冒險 劇情 科幻 動作 搞笑 愛情 家庭 兒童 短片 溫情 懸疑 青春 熱血 成長',
   };
   static List<String> get genreList =>
-      _genreList[NnyyData.data.mode]?.split(' ') ?? ['全部'];
+      List.unmodifiable(_genreList[NnyyData.data.mode]?.split(' ') ?? ['全部']);
 
-  static final countryMap = {
+  static final _countryMap = {
     '全部': '',
     '大陸': 'cn',
     '美國': 'us',
@@ -124,6 +132,7 @@ class HomeController {
     '泰國': 'th',
     '俄羅斯': 'ru',
   };
+  static Map<String, String> get countryMap => Map.unmodifiable(_countryMap);
   static final _countryList = {
     '劇集': '全部 大陸 美國 香港 台灣 日本 韓國 英國 法國 德國 義大利 西班牙 印度 泰國 俄羅斯',
     '電影': '全部 大陸 美國 香港 台灣 日本 韓國 英國 法國 德國 義大利 西班牙 印度 泰國 俄羅斯',
@@ -131,18 +140,22 @@ class HomeController {
     '動畫': '全部 大陸 美國 香港 台灣 日本 韓國 英國 法國',
   };
   static List<String> get countryList =>
-      _countryList[NnyyData.data.mode]?.split(' ') ?? ['全部'];
+      List.unmodifiable(_countryList[NnyyData.data.mode]?.split(' ') ?? ['全部']);
 
-  static Map<String, String> get yearMap => {
+  static Map<String, String> get yearMap => Map.unmodifiable({
         '全部': '',
         ...{for (var v in yearList.skip(1).take(15)) v: v},
         yearList.last: 'lt__${yearList.elementAt(14)}',
-      };
-  static List<String> get yearList => [
+      });
+  static List<String> get yearList => List.unmodifiable([
         '全部',
         ...List<String>.generate(15, (i) => '${DateTime.now().year - i}'),
         '${DateTime.now().year - 14}之前',
-      ];
+      ]);
+
+  void clearError() {
+    _error.value = '';
+  }
 
   void searchVideo(String search) async {
     _kind = VideoService.searchPath;
@@ -185,7 +198,7 @@ class HomeController {
       _page[modeIndex] = 0;
       _list[modeIndex].clear();
     }
-    videoList.value = switch (NnyyData.data.mode) {
+    _videoList.value = switch (NnyyData.data.mode) {
       modeHistory => loadHistory(),
       modeSearch when _search.isEmpty => [],
       String() => [..._list[modeIndex]],
@@ -198,7 +211,7 @@ class HomeController {
     var list = await loadVideoList();
     _noMore[modeIndex] = list.isEmpty;
     _list[modeIndex].addAll(list);
-    videoList.value = [..._list[modeIndex]];
+    _videoList.value = [..._list[modeIndex]];
   }
 
   Future<List<VideoInfo>> loadVideoList() async {
@@ -209,7 +222,7 @@ class HomeController {
       };
       return await VideoService.i.getVideoList(param);
     } catch (e) {
-      error.value = e.toString();
+      _error.value = e.toString();
       return [];
     }
   }

@@ -30,7 +30,7 @@ class HomeView extends HookWidget {
       final messager = ScaffoldMessenger.of(context)..clearSnackBars();
       Future(() {
         messager.showSnackBar(getSnackBar(Text(home.error.value)));
-        home.error.value = '';
+        home.clearError();
       });
     });
     useValueChanged(SaveStrategy.i.syncingOnExit.value, (_, void __) {
@@ -46,7 +46,7 @@ class HomeView extends HookWidget {
       );
       Future(() {
         messager.showSnackBar(getSnackBar(widget));
-        home.error.value = '';
+        home.clearError();
       });
     });
     useListenable(home.canPop);

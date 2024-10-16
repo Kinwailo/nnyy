@@ -35,7 +35,7 @@ class VideoView extends HookWidget {
       final navigator = Navigator.of(context, rootNavigator: true);
       Future(() async {
         messager.showSnackBar(getSnackBar(Text(controller.error.value)));
-        controller.error.value = '';
+        controller.clearError();
         await Future.delayed(Durations.extralong4 * 2);
         navigator.pop();
       });
@@ -52,7 +52,7 @@ class VideoView extends HookWidget {
           return;
         }
         if (controller.ui.value) {
-          controller.ui.value = false;
+          controller.exitVideoUI();
         } else {
           controller.stop();
           NnyyData.saveAll();

@@ -25,19 +25,33 @@ class VideoController {
   static VideoController? _instance;
   static VideoController get i => _instance ??= VideoController._();
 
-  final detail = ValueNotifier<VideoDetail?>(null);
+  final _detail = ValueNotifier<VideoDetail?>(null);
 
-  final ep = ValueNotifier('');
-  final site = ValueNotifier('');
-  final ssite = ValueNotifier('');
-  final video = ValueNotifier<VideoPlayerController?>(null);
+  final _ep = ValueNotifier('');
+  final _site = ValueNotifier('');
+  final _ssite = ValueNotifier('');
+  final _video = ValueNotifier<VideoPlayerController?>(null);
 
-  final player = ValueNotifier(false);
-  final ui = ValueNotifier(false);
-  final lock = ValueNotifier(false);
-  final state = ValueNotifier<VideoState>(VideoState.rest);
-  final paused = ValueNotifier(false);
-  final seek = ValueNotifier(0);
+  final _player = ValueNotifier(false);
+  final _ui = ValueNotifier(false);
+  final _lock = ValueNotifier(false);
+  final _state = ValueNotifier<VideoState>(VideoState.rest);
+  final _paused = ValueNotifier(false);
+  final _seek = ValueNotifier(0);
+
+  final _error = ValueNotifier('');
+
+  ValueListenable<VideoDetail?> get detail => _detail;
+  ValueListenable<String> get ep => _ep;
+  ValueListenable<String> get site => _site;
+  ValueListenable<VideoPlayerController?> get video => _video;
+  ValueListenable<bool> get player => _player;
+  ValueListenable<bool> get ui => _ui;
+  ValueListenable<bool> get lock => _lock;
+  ValueListenable<VideoState> get state => _state;
+  ValueListenable<bool> get paused => _paused;
+  ValueListenable<int> get seek => _seek;
+  ValueListenable<String> get error => _error;
 
   late final tapAction = RepeatAction(_tapUI);
   late final rewindAction = RepeatAction(_rewind);
@@ -57,26 +71,29 @@ class VideoController {
   int _counter = 0;
   final _stopwatch = Stopwatch();
   var _uiStart = DateTime.now();
-  final error = ValueNotifier('');
 
   Future<void> loadVideoDetail(VideoInfo info) async {
-    detail.value = null;
+    _detail.value = null;
     try {
-      detail.value = await VideoService.i.getVideoDetail(info);
+      _detail.value = await VideoService.i.getVideoDetail(info);
     } catch (e) {
-      error.value = e.toString();
+      _error.value = e.toString();
       return;
     }
     NnyyData.videos[info.id].title = info.title;
-    ep.value = '';
-    site.value = '';
+    _ep.value = '';
+    _site.value = '';
+  }
+
+  void clearError() {
+    _error.value = '';
   }
 
   void _enterFullScreen() {
     if (unsupported) return;
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
     WakelockPlus.enable();
-    player.value = true;
+    _player.value = true;
     focusView = focusNow;
     focusPlayer.requestFocus();
   }
@@ -85,8 +102,16 @@ class VideoController {
     if (unsupported) return;
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     WakelockPlus.disable();
-    player.value = false;
+    _player.value = false;
     focusView?.requestFocus();
+  }
+
+  void exitVideoUI() {
+    _ui.value = false;
+  }
+
+  void exitVideoPlayer() {
+    _player.value = false;
   }
 
   Future<void> play(String ep_) async {
@@ -97,13 +122,13 @@ class VideoController {
       _enterFullScreen();
     } else {
       _disposeVideo();
-      state.value = VideoState.loading;
+      _state.value = VideoState.loading;
       sites = await VideoService.i.getVideoSite(d.info, d.eps[ep_]!);
       sites = NnyyData.data.sortSiteMap(sites);
-      site.value =
-          sites.containsKey(ssite.value) ? ssite.value : sites.keys.first;
-      if (ssite.value.isEmpty) ssite.value = site.value;
-      ep.value = ep_;
+      _site.value =
+          sites.containsKey(_ssite.value) ? _ssite.value : sites.keys.first;
+      if (_ssite.value.isEmpty) _ssite.value = site.value;
+      _ep.value = ep_;
       _enterFullScreen();
       _loadVideo(sites[site.value]!);
     }
@@ -131,8 +156,8 @@ class VideoController {
       _enterFullScreen();
     } else {
       _disposeVideo();
-      site.value = site_;
-      ssite.value = site_;
+      _site.value = site_;
+      _ssite.value = site_;
       _enterFullScreen();
       _loadVideo(sites[site_]!);
     }
@@ -148,13 +173,13 @@ class VideoController {
       }
     }
     if (repeat == 2 && last) {
-      lock.value = !lock.value;
+      _lock.value = !lock.value;
       showUI(true);
     }
   }
 
   Future<void> showUI(bool show) async {
-    ui.value = show;
+    _ui.value = show;
     _uiStart = DateTime.now();
     var start = _uiStart;
     await Future.delayed(Durations.extralong4 * 5);
@@ -162,7 +187,7 @@ class VideoController {
     if (paused.value) return;
     _enterFullScreen();
     if (lock.value) return;
-    ui.value = false;
+    _ui.value = false;
   }
 
   void toggle() {
@@ -174,7 +199,7 @@ class VideoController {
   }
 
   void pause() {
-    paused.value = true;
+    _paused.value = true;
     _stopwatch.stop();
     video.value?.pause();
     _updateHistory();
@@ -213,27 +238,27 @@ class VideoController {
   }
 
   void _rewind(int repeat, bool last) {
-    _seek(-1, repeat, last);
+    _seekTo(-1, repeat, last);
   }
 
   void _forward(int repeat, bool last) {
-    _seek(1, repeat, last);
+    _seekTo(1, repeat, last);
   }
 
-  void _seek(int offset, int repeat, bool last) {
+  void _seekTo(int offset, int repeat, bool last) {
     if (video.value == null) return;
     if (!last) {
       var s = {6: 1, 11: 2, 16: 5, 27: 10};
       var k = s.keys.skipWhile((e) => repeat >= e).firstOrNull ?? 0;
       var v = s[k] ?? 30;
-      seek.value += offset * v;
+      _seek.value += offset * v;
       showUI(true);
     } else {
       var cur = video.value!.value.position.inSeconds;
       var len = video.value!.value.duration.inSeconds;
       cur += seek.value;
       cur = cur.clamp(0, len);
-      seek.value = 0;
+      _seek.value = 0;
       _seekVideo(cur);
       showUI(true);
     }
@@ -243,7 +268,7 @@ class VideoController {
     if (!paused.value) _updateHistory();
     _disposeVideo();
     sites = {};
-    ep.value = '';
+    _ep.value = '';
     _exitFullScreen();
   }
 
@@ -253,8 +278,8 @@ class VideoController {
       return;
     }
     if (unsupported) return;
-    state.value = VideoState.loading;
-    paused.value = false;
+    _state.value = VideoState.loading;
+    _paused.value = false;
     _stopwatch.stop();
     _stopwatch.reset();
     _url = url;
@@ -266,12 +291,12 @@ class VideoController {
         if (video.value!.value.isCompleted) next(1, auto: true);
       });
       if (_url != url) return;
-      video.value = v;
+      _video.value = v;
       _startVideo();
     }).catchError((_) {
       if (v == video.value) {
-        state.value = VideoState.error;
-        video.value = null;
+        _state.value = VideoState.error;
+        _video.value = null;
       }
       v.dispose();
     });
@@ -287,7 +312,7 @@ class VideoController {
       pos = max(pos, skip);
       if (pos < len) await _seekVideo(pos);
     }
-    state.value = VideoState.ready;
+    _state.value = VideoState.ready;
     if (!paused.value) {
       _playVideo();
       showUI(true);
@@ -306,12 +331,12 @@ class VideoController {
         webview?.callJsMethod('seekVideo', ['$pos']);
       }
     }
-    state.value = VideoState.ready;
+    _state.value = VideoState.ready;
   }
 
   void _playVideo() async {
     if (state.value != VideoState.ready) return;
-    paused.value = false;
+    _paused.value = false;
     _stopwatch.start();
     video.value?.play();
     showUI(ui.value);
@@ -327,10 +352,10 @@ class VideoController {
   }
 
   Future<void> _disposeVideo() async {
-    paused.value = true;
+    _paused.value = true;
     _stopwatch.stop();
     var v = video.value;
-    video.value = null;
+    _video.value = null;
     await v?.pause();
     v?.dispose();
   }
