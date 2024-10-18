@@ -4,22 +4,22 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 class NnyyButton extends HookWidget {
   const NnyyButton({
     super.key,
-    this.selected = false,
     this.focusNode,
     this.onPressed,
     this.onChanged,
     this.child,
-  }) : isToggle = false;
-  const NnyyButton.toggle({
+  })  : selectable = false,
+        selected = false;
+  const NnyyButton.selectable({
     super.key,
     this.selected = false,
     this.focusNode,
     this.onPressed,
     this.onChanged,
     this.child,
-  }) : isToggle = true;
+  }) : selectable = true;
 
-  final bool isToggle;
+  final bool selectable;
   final bool selected;
   final FocusNode? focusNode;
   final Widget? child;
@@ -34,7 +34,7 @@ class NnyyButton extends HookWidget {
     final state = useMemoized(
         () => WidgetStatesController(selected ? {WidgetState.selected} : {}));
     final callback = useCallback(() {
-      checked.value = !checked.value;
+      if (selectable) checked.value = !checked.value;
       onPressed?.call();
       onChanged?.call(checked.value);
     });

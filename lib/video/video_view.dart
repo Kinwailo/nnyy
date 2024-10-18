@@ -520,7 +520,7 @@ class _EpButton extends HookWidget {
     useListenable(progress);
     final selected =
         useListenableSelector(controller.ep, () => controller.ep.value == ep);
-    return NnyyButton(
+    return NnyyButton.selectable(
       selected: selected,
       onPressed: playVideo,
       child: Column(
