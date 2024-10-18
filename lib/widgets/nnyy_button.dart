@@ -28,29 +28,50 @@ class NnyyButton extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final focus = useFocusNode();
+    final colorScheme = Theme.of(context).colorScheme;
+    final focus = focusNode ?? useFocusNode();
     final checked = useState(selected);
+    final state = useMemoized(
+        () => WidgetStatesController(selected ? {WidgetState.selected} : {}));
     final callback = useCallback(() {
       checked.value = !checked.value;
       onPressed?.call();
       onChanged?.call(checked.value);
     });
-    return (isToggle ? checked.value : selected)
-        ? FilledButton.tonal(
-            focusNode: focusNode ?? focus,
-            onPressed: callback,
-            style: OutlinedButton.styleFrom(
-                visualDensity: VisualDensity.compact,
-                padding: const EdgeInsets.symmetric(horizontal: 12)),
-            child: child,
-          )
-        : OutlinedButton(
-            focusNode: focusNode ?? focus,
-            onPressed: callback,
-            style: OutlinedButton.styleFrom(
-                visualDensity: VisualDensity.compact,
-                padding: const EdgeInsets.symmetric(horizontal: 12)),
-            child: child,
-          );
+    useValueChanged(selected, (_, void __) => checked.value = selected);
+    useValueChanged(
+      checked.value,
+      (_, void __) => state.value = {
+        ...state.value..remove(WidgetState.selected),
+        if (checked.value) WidgetState.selected
+      },
+    );
+    return OutlinedButton(
+      focusNode: focus,
+      statesController: state,
+      onPressed: callback,
+      style: OutlinedButton.styleFrom(
+        visualDensity: VisualDensity.compact,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+      ).copyWith(
+        backgroundColor: WidgetStateProperty.resolveWith((set) =>
+            set.contains(WidgetState.selected)
+                ? colorScheme.tertiaryContainer
+                : null),
+        foregroundColor: WidgetStateProperty.resolveWith(
+            (set) => set.contains(WidgetState.focused)
+                ? colorScheme.primary
+                : set.contains(WidgetState.selected)
+                    ? colorScheme.onTertiaryContainer
+                    : colorScheme.onSurface),
+        overlayColor: WidgetStateProperty.resolveWith((set) =>
+            set.contains(WidgetState.focused) &&
+                    !set.contains(WidgetState.selected) &&
+                    !set.contains(WidgetState.hovered)
+                ? colorScheme.onSecondaryFixedVariant
+                : null),
+      ),
+      child: child,
+    );
   }
 }

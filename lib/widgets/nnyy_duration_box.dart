@@ -60,8 +60,16 @@ class NnyyDurationBox extends HookWidget {
             onChanged?.call(dur.value);
           },
           style: TextButton.styleFrom(
-              visualDensity: VisualDensity.compact,
-              padding: const EdgeInsets.symmetric(horizontal: 12)),
+                  visualDensity: VisualDensity.compact,
+                  padding: const EdgeInsets.symmetric(horizontal: 12))
+              .copyWith(
+            overlayColor: WidgetStateProperty.resolveWith((set) =>
+                set.contains(WidgetState.focused) &&
+                        !set.contains(WidgetState.selected) &&
+                        !set.contains(WidgetState.hovered)
+                    ? colorScheme.onSecondaryFixedVariant
+                    : null),
+          ),
           child: DefaultTextStyle(
             style: DefaultTextStyle.of(context).style.copyWith(color: color),
             child: Row(
@@ -70,7 +78,6 @@ class NnyyDurationBox extends HookWidget {
                 Text(label),
                 const SizedBox(width: 4),
                 _SpinValue(
-                  key: keys[0],
                   index: 0,
                   value: min,
                   onChanged: (v) {
@@ -80,7 +87,6 @@ class NnyyDurationBox extends HookWidget {
                 ),
                 const Text(':'),
                 _SpinValue(
-                  key: keys[1],
                   index: 1,
                   value: sec,
                   onChanged: (v) {
@@ -98,8 +104,11 @@ class NnyyDurationBox extends HookWidget {
 }
 
 class _SpinValue extends HookWidget {
-  const _SpinValue(
-      {super.key, this.value = 0, required this.index, this.onChanged});
+  const _SpinValue({
+    this.value = 0,
+    required this.index,
+    this.onChanged,
+  });
 
   final int value;
   final int index;
@@ -120,6 +129,7 @@ class _SpinValue extends HookWidget {
       onChanged?.call(spin.value);
       return true;
     });
+    useValueChanged(value, (_, void __) => spin.value = value);
     final text = spin.value < 10 ? "0${spin.value}" : "${spin.value}";
     final colorScheme = Theme.of(context).colorScheme;
     final color = active.value ? colorScheme.primary : colorScheme.onSurface;

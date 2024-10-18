@@ -7,6 +7,7 @@ import '../services/save_strategy.dart';
 import '../widgets/get_snack_bar.dart';
 import '../widgets/nnyy_search_box.dart';
 import '../widgets/nnyy_focus.dart';
+import '../widgets/nnyy_select_button.dart';
 import 'home_controller.dart';
 import 'video_card.dart';
 import 'more_card.dart';
@@ -115,33 +116,19 @@ class _Filter extends HookWidget {
         child: Row(
           children: [
             const SizedBox(width: 8),
-            SegmentedButton(
-              style: SegmentedButton.styleFrom(
-                  visualDensity: VisualDensity.compact,
-                  shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(8)))),
-              segments: HomeController.modeList
-                  .map((e) => ButtonSegment(value: e, label: Text(e)))
-                  .toList(),
-              showSelectedIcon: false,
-              selected: {NnyyData.data.mode},
-              onSelectionChanged: (v) => NnyyData.data.mode = v.first,
+            NnyySelectButton(
+              segments: HomeController.modeList,
+              selected: NnyyData.data.mode,
+              onChanged: (v) => NnyyData.data.mode = v,
             ),
             const SizedBox(width: 16),
             if (HomeController.kindMap.containsKey(NnyyData.data.mode)) ...[
               const Text('排序'),
               const SizedBox(width: 16),
-              SegmentedButton(
-                style: SegmentedButton.styleFrom(
-                    visualDensity: VisualDensity.compact,
-                    shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(8)))),
-                segments: HomeController.sortList
-                    .map((e) => ButtonSegment(value: e, label: Text(e)))
-                    .toList(),
-                showSelectedIcon: false,
-                selected: {NnyyData.data.sort},
-                onSelectionChanged: (v) => NnyyData.data.sort = v.first,
+              NnyySelectButton(
+                segments: HomeController.sortList,
+                selected: NnyyData.data.sort,
+                onChanged: (v) => NnyyData.data.sort = v,
               ),
               const SizedBox(width: 16),
               const Text('分類'),

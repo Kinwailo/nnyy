@@ -26,6 +26,7 @@ class NnyyToggle extends HookWidget {
       checked.value = !checked.value;
       onChanged?.call(checked.value);
     });
+    useValueChanged(value, (_, void __) => checked.value = value);
     return IconButton(
       onPressed: callback,
       color: checked.value ? activeColor : color,

@@ -8,6 +8,7 @@ import '../widgets/get_snack_bar.dart';
 import '../widgets/nnyy_button.dart';
 import '../widgets/nnyy_checkbox.dart';
 import '../widgets/nnyy_duration_box.dart';
+import '../widgets/nnyy_select_button.dart';
 import '../widgets/nnyy_toggle.dart';
 import '../widgets/nnyy_focus.dart';
 import 'video_controller.dart';
@@ -272,9 +273,9 @@ class _VideoTitle extends HookWidget {
     final detail = VideoController.i.detail.value!;
     final year = detail.info.year;
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const BackButton(),
+        const SizedBox(width: 8),
         ExcludeFocus(
           child: SelectableText(
             '${detail.info.title}${year == null ? '' : ' ($year)'}',
@@ -417,24 +418,17 @@ class _VideoSiteList extends HookWidget {
   Widget build(BuildContext context) {
     final controller = VideoController.i;
     final sites = controller.sites.keys;
+    var selected = controller.site.value;
+    if (!sites.contains(selected)) selected = sites.firstOrNull ?? '';
     useListenable(controller.ep);
     useListenable(controller.site);
     return Center(
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        child: SegmentedButton(
-          style: SegmentedButton.styleFrom(
-              visualDensity: VisualDensity.compact,
-              shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(8)))),
-          segments: (sites.isEmpty ? [''] : [...sites])
-              .map((e) => ButtonSegment(value: e, label: Text(e)))
-              .toList(),
-          showSelectedIcon: false,
-          emptySelectionAllowed: true,
-          selected: {controller.site.value},
-          onSelectionChanged: (v) =>
-              controller.setSite(v.firstOrNull ?? controller.site.value),
+        child: NnyySelectButton(
+          segments: (sites.isEmpty ? [''] : [...sites]),
+          selected: selected,
+          onChanged: (v) => controller.setSite(v),
         ),
       ),
     );
