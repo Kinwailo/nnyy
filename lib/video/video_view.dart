@@ -448,10 +448,10 @@ class _VideoEpList extends HookWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final controller = VideoController.i;
     final detail = controller.detail.value!;
-    const itemsPrePage = 200;
+    const itemsPrePage = 100;
     final pages = (detail.eps.length / itemsPrePage).ceil();
-    final page = useState(0);
     final videoData = NnyyData.videos[detail.info.id];
+    final page = useState(videoData.reverse ? pages - 1 : 0);
     useListenable(videoData);
     return NnyyFocusGroup(
       child: Column(
