@@ -138,38 +138,6 @@ class NnyyData extends ChangeNotifier {
     // final from = toCloud ? this : cloud;
     // final to = toCloud ? cloud : this;
   }
-
-  static void importOld() {
-    if (kIsWeb && html.window.localStorage.containsKey('/nnyy/')) {
-      final text = html.window.localStorage['/nnyy/'];
-      var data = json.decode(text ?? '') as Map;
-      Map v = data['videos.json'] ?? {};
-      for (String id in v.keys) {
-        int i = int.tryParse(id) ?? -1;
-        if (i == -1) continue;
-        for (String d in v[id].keys) {
-          if (d.isEmpty) continue;
-          if (d == 'meta') {
-            Map meta = v[id][d];
-            if (meta.containsKey('title')) videos[i].title = meta['title'];
-            if (meta.containsKey('ep')) videos[i].ep = meta['ep'];
-            if (meta.containsKey('fav')) videos[i].fav = meta['fav'];
-            if (meta.containsKey('next')) videos[i].next = meta['next'];
-            if (meta.containsKey('skip')) videos[i].skip = meta['skip'];
-            if (meta.containsKey('datetime')) {
-              videos[i].datetime =
-                  DateTime.tryParse(meta['datetime']) ?? DateTime(2000);
-            }
-          } else {
-            List p = v[id][d];
-            videos[i].progress[d].data = VideoProgress(p[0], p[1], p[2]);
-          }
-        }
-      }
-      NnyyData.saveAll();
-      html.window.localStorage.remove('/nnyy/');
-    }
-  }
 }
 
 class NnyyVideoCollection extends ChangeNotifier {
@@ -208,6 +176,7 @@ class NnyyVideoData extends ChangeNotifier {
   late final _fav = StoreValue('$id$name', 'fav', false, cloud: cloud);
   late final _next = StoreValue('$id$name', 'next', true, cloud: cloud);
   late final _skip = StoreValue('$id$name', 'skip', 0, cloud: cloud);
+  late final _reverse = StoreValue('$id$name', 'reverse', false, cloud: cloud);
   late final _datetime = StoreValueFrom('$id$name', 'datetime', DateTime(2000),
       cloud: cloud,
       onSet: (v) => v.toString(),
@@ -223,6 +192,8 @@ class NnyyVideoData extends ChangeNotifier {
   set next(bool v) => _next.value = v;
   int get skip => _skip.value;
   set skip(int v) => _skip.value = v;
+  bool get reverse => _reverse.value;
+  set reverse(bool v) => _reverse.value = v;
   DateTime get datetime => _datetime.value;
   set datetime(DateTime v) => _datetime.value = v;
 
@@ -258,6 +229,7 @@ class NnyyVideoData extends ChangeNotifier {
     to.fav = from.fav;
     to.next = from.next;
     to.skip = from.skip;
+    to.reverse = from.reverse;
     if (to.datetime.isBefore(from.datetime)) to.datetime = from.datetime;
 
     final cloudProgress = cloudData.progress;

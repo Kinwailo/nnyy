@@ -438,13 +438,21 @@ class _VideoSiteList extends HookWidget {
 class _VideoEpList extends HookWidget {
   const _VideoEpList();
 
+  List<T> reverseList<T>(List<T> list, bool reverse) {
+    if (reverse) return list.reversed.toList();
+    return list;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final controller = VideoController.i;
     final detail = controller.detail.value!;
     const itemsPrePage = 200;
     final pages = (detail.eps.length / itemsPrePage).ceil();
     final page = useState(0);
+    final videoData = NnyyData.videos[detail.info.id];
+    useListenable(videoData);
     return NnyyFocusGroup(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -455,12 +463,22 @@ class _VideoEpList extends HookWidget {
               padding: const EdgeInsets.only(bottom: 8),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                child: NnyySelectButton(
-                  segments: List.generate(pages, (p) => p),
-                  selected: page.value,
-                  onChanged: (v) => page.value = v,
-                  getText: (v) =>
-                      '${v * itemsPrePage + 1} - ${(v + 1) * itemsPrePage}',
+                child: Row(
+                  children: [
+                    NnyyToggle(
+                        value: videoData.reverse,
+                        onChanged: (v) => videoData.reverse = v,
+                        icon: Icons.sync_alt,
+                        activeColor: colorScheme.onTertiaryContainer),
+                    const SizedBox(width: 4),
+                    NnyySelectButton(
+                        segments: reverseList(
+                            List.generate(pages, (p) => p), videoData.reverse),
+                        selected: page.value,
+                        onChanged: (v) => page.value = v,
+                        getText: (v) =>
+                            '${v * itemsPrePage + 1} - ${(v + 1) * itemsPrePage}'),
+                  ],
                 ),
               ),
             ),
@@ -473,11 +491,13 @@ class _VideoEpList extends HookWidget {
               childAspectRatio: 112 / 36,
               mainAxisSpacing: 8,
               crossAxisSpacing: 8,
-              children: detail.eps.keys
-                  .skip(page.value * itemsPrePage)
-                  .map((e) => _EpButton(key: Key(e), e))
-                  .take(itemsPrePage)
-                  .toList(),
+              children: reverseList(
+                  detail.eps.keys
+                      .skip(page.value * itemsPrePage)
+                      .map((e) => _EpButton(key: Key(e), e))
+                      .take(itemsPrePage)
+                      .toList(),
+                  videoData.reverse),
             ),
           ),
         ],
