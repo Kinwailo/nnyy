@@ -5,7 +5,6 @@ import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
-import "package:universal_html/html.dart" as html;
 
 import '../home/home_controller.dart';
 import 'data_store.dart';
