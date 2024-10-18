@@ -7,11 +7,13 @@ class NnyySelectButton<T> extends HookWidget {
     required this.segments,
     required this.selected,
     this.onChanged,
+    this.getText,
   });
 
   final List<T> segments;
   final T selected;
   final void Function(T)? onChanged;
+  final String Function(T)? getText;
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +22,9 @@ class NnyySelectButton<T> extends HookWidget {
     useValueChanged(selected, (_, void __) => set.value = {selected});
     return SegmentedButton(
       segments: segments
-          .map((e) => ButtonSegment(value: e, label: Text(e.toString())))
+          .map((e) => ButtonSegment(
+              value: e,
+              label: Text(getText == null ? e.toString() : getText!(e))))
           .toList(),
       showSelectedIcon: false,
       selected: set.value,

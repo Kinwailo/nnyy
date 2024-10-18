@@ -455,21 +455,12 @@ class _VideoEpList extends HookWidget {
               padding: const EdgeInsets.only(bottom: 8),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                child: SegmentedButton(
-                  style: SegmentedButton.styleFrom(
-                      visualDensity: VisualDensity.compact,
-                      shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(8)))),
-                  segments: List.generate(pages, (p) {
-                    return ButtonSegment(
-                        value: p,
-                        label: Text(
-                            '${p * itemsPrePage + 1} - ${(p + 1) * itemsPrePage}'));
-                  }),
-                  showSelectedIcon: false,
-                  emptySelectionAllowed: true,
-                  selected: {page.value},
-                  onSelectionChanged: (v) => page.value = v.firstOrNull ?? 0,
+                child: NnyySelectButton(
+                  segments: List.generate(pages, (p) => p),
+                  selected: page.value,
+                  onChanged: (v) => page.value = v,
+                  getText: (v) =>
+                      '${v * itemsPrePage + 1} - ${(v + 1) * itemsPrePage}',
                 ),
               ),
             ),
