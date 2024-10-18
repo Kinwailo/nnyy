@@ -9,6 +9,7 @@ import 'package:google_sign_in_dartio/google_sign_in_dartio.dart';
 import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
 import 'package:googleapis/drive/v3.dart';
 
+import 'google_client_id.dart';
 import 'data_store.dart';
 import 'nnyy_data.dart';
 import '../widgets/google_button_web.dart'
@@ -33,15 +34,11 @@ class GoogleDriveStorage extends CloudStorage with ChangeNotifier {
 
   static String? get _clientId {
     return kIsWeb
-        ? '835065224200-q4reog9f8mkcbhkak4sb10jhp7ru8gu3.apps.googleusercontent.com'
+        ? clientIdWeb
         : switch (defaultTargetPlatform) {
             TargetPlatform.android || TargetPlatform.fuchsia => null,
-            TargetPlatform.iOS ||
-            TargetPlatform.macOS =>
-              'Client ID for iOS and MacOS',
-            TargetPlatform.windows ||
-            TargetPlatform.linux =>
-              '835065224200-05jbb0k7pdrk2gni62kufihgek7l5jn4.apps.googleusercontent.com',
+            TargetPlatform.iOS || TargetPlatform.macOS => clientIdiOS,
+            TargetPlatform.windows || TargetPlatform.linux => clientIdDesktop,
           };
   }
 
