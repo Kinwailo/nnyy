@@ -68,8 +68,7 @@ class GoogleDriveStorage extends CloudStorage with ChangeNotifier {
         notifyListeners();
         return;
       }
-      bool auth = true;
-      if (kIsWeb) auth = await _checkAccess();
+      bool auth = await _checkAccess();
       if (auth) {
         try {
           final client = await _googleSignIn.authenticatedClient();
@@ -85,6 +84,7 @@ class GoogleDriveStorage extends CloudStorage with ChangeNotifier {
   }
 
   Future<bool> _checkAccess() async {
+    if (!kIsWeb) return true;
     var auth = await _googleSignIn.canAccessScopes(_scopes);
     if (!auth) auth = await _googleSignIn.requestScopes(_scopes);
     return auth;
