@@ -51,50 +51,59 @@ class NnyyDurationBox extends HookWidget {
         return true;
       },
       child: NnyyFocusGroup(
-        child: TextButton(
-          focusNode: focus,
-          onHover: (v) => active.value = v,
-          onPressed: () {
-            dur.value = Duration.zero;
-            keys.replaceRange(0, 2, [UniqueKey(), UniqueKey()]);
-            onChanged?.call(dur.value);
-          },
-          style: TextButton.styleFrom(
-                  visualDensity: VisualDensity.compact,
-                  padding: const EdgeInsets.symmetric(horizontal: 12))
-              .copyWith(
-            overlayColor: WidgetStateProperty.resolveWith((set) =>
-                set.contains(WidgetState.focused) &&
-                        !set.contains(WidgetState.selected) &&
-                        !set.contains(WidgetState.hovered)
-                    ? colorScheme.onSecondaryFixedVariant
-                    : null),
-          ),
-          child: DefaultTextStyle(
-            style: DefaultTextStyle.of(context).style.copyWith(color: color),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(label),
-                const SizedBox(width: 4),
-                _SpinValue(
-                  index: 0,
-                  value: min,
-                  onChanged: (v) {
-                    dur.value = set(dur.value, min: v);
-                    onChanged?.call(dur.value);
-                  },
-                ),
-                const Text(':'),
-                _SpinValue(
-                  index: 1,
-                  value: sec,
-                  onChanged: (v) {
-                    dur.value = set(dur.value, sec: v);
-                    onChanged?.call(dur.value);
-                  },
-                ),
-              ],
+        child: FocusTraversalOrder(
+          order: const NumericFocusOrder(0),
+          child: TextButton(
+            focusNode: focus,
+            onHover: (v) => active.value = v,
+            onPressed: () {
+              dur.value = Duration.zero;
+              keys.replaceRange(0, 2, [UniqueKey(), UniqueKey()]);
+              onChanged?.call(dur.value);
+            },
+            style: TextButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(horizontal: 12))
+                .copyWith(
+              overlayColor: WidgetStateProperty.resolveWith((set) =>
+                  set.contains(WidgetState.focused) &&
+                          !set.contains(WidgetState.selected) &&
+                          !set.contains(WidgetState.hovered)
+                      ? colorScheme.onSecondaryFixedVariant
+                      : null),
+            ),
+            child: DefaultTextStyle(
+              style: DefaultTextStyle.of(context).style.copyWith(color: color),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(label),
+                  const SizedBox(width: 4),
+                  FocusTraversalOrder(
+                    order: const NumericFocusOrder(1),
+                    child: _SpinValue(
+                      index: 0,
+                      value: min,
+                      onChanged: (v) {
+                        dur.value = set(dur.value, min: v);
+                        onChanged?.call(dur.value);
+                      },
+                    ),
+                  ),
+                  const Text(':'),
+                  FocusTraversalOrder(
+                    order: const NumericFocusOrder(2),
+                    child: _SpinValue(
+                      index: 1,
+                      value: sec,
+                      onChanged: (v) {
+                        dur.value = set(dur.value, sec: v);
+                        onChanged?.call(dur.value);
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

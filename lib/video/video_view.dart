@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -323,53 +324,68 @@ class _VideoMeta extends HookWidget {
         spacing: 4,
         runSpacing: 4,
         children: [
-          NnyyToggle(
-            value: video.fav,
-            onChanged: (v) {
-              video.title = info.title;
-              video.fav = v;
-              video.datetime = DateTime.now();
-              if (!v) video.removeFav();
-            },
-            activeColor: Colors.redAccent,
-            icon: Icons.favorite_border,
-            activeIcon: Icons.favorite,
+          FocusTraversalOrder(
+            order: const NumericFocusOrder(0),
+            child: NnyyToggle(
+              value: video.fav,
+              onChanged: (v) {
+                video.title = info.title;
+                video.fav = v;
+                video.datetime = DateTime.now();
+                if (!v) video.removeFav();
+              },
+              activeColor: Colors.redAccent,
+              icon: Icons.favorite_border,
+              activeIcon: Icons.favorite,
+            ),
           ),
           if (video.ep.isNotEmpty) ...[
             const SizedBox(width: 8),
-            NnyyButton(
-              onPressed: () => controller.play(video.ep),
-              child: Text('繼續播放${video.ep}'),
+            FocusTraversalOrder(
+              order: const NumericFocusOrder(1),
+              child: NnyyButton(
+                onPressed: () => controller.play(video.ep),
+                child: Text('繼續播放${video.ep}'),
+              ),
             ),
             const SizedBox(width: 8),
           ],
-          NnyyCheckbox(
-            label: '自動播放下一集',
-            value: video.next,
-            onChanged: (v) {
-              video.title = info.title;
-              video.next = v;
-              video.datetime = DateTime.now();
-            },
-          ),
-          NnyyDurationBox(
-              label: '跳過片頭',
-              value: Duration(seconds: video.skip),
+          FocusTraversalOrder(
+            order: const NumericFocusOrder(2),
+            child: NnyyCheckbox(
+              label: '自動播放下一集',
+              value: video.next,
               onChanged: (v) {
                 video.title = info.title;
-                video.skip = v.inSeconds;
+                video.next = v;
                 video.datetime = DateTime.now();
-              }),
+              },
+            ),
+          ),
+          FocusTraversalOrder(
+            order: const NumericFocusOrder(3),
+            child: NnyyDurationBox(
+                label: '跳過片頭',
+                value: Duration(seconds: video.skip),
+                onChanged: (v) {
+                  video.title = info.title;
+                  video.skip = v.inSeconds;
+                  video.datetime = DateTime.now();
+                }),
+          ),
           const SizedBox(width: 8),
-          NnyyButton(
-            onPressed: () {
-              video.ep = '';
-              video.delete();
-              if (video.fav == false) {
-                Navigator.of(context, rootNavigator: true).pop();
-              }
-            },
-            child: const Text('刪除記錄'),
+          FocusTraversalOrder(
+            order: const NumericFocusOrder(4),
+            child: NnyyButton(
+              onPressed: () {
+                video.ep = '';
+                video.delete();
+                if (video.fav == false) {
+                  Navigator.of(context, rootNavigator: true).pop();
+                }
+              },
+              child: const Text('刪除記錄'),
+            ),
           ),
         ],
       ),
@@ -422,13 +438,15 @@ class _VideoSiteList extends HookWidget {
     if (!sites.contains(selected)) selected = sites.firstOrNull ?? '';
     useListenable(controller.ep);
     useListenable(controller.site);
-    return Center(
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: NnyySelectButton(
-          segments: (sites.isEmpty ? [''] : [...sites]),
-          selected: selected,
-          onChanged: (v) => controller.setSite(v),
+    return NnyyFocusGroup(
+      child: Center(
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: NnyySelectButton(
+            segments: (sites.isEmpty ? [''] : [...sites]),
+            selected: selected,
+            onChanged: (v) => controller.setSite(v),
+          ),
         ),
       ),
     );
@@ -465,19 +483,25 @@ class _VideoEpList extends HookWidget {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    NnyyToggle(
-                        value: videoData.reverse,
-                        onChanged: (v) => videoData.reverse = v,
-                        icon: Icons.sync_alt,
-                        activeColor: colorScheme.onTertiaryContainer),
+                    FocusTraversalOrder(
+                      order: const NumericFocusOrder(-2),
+                      child: NnyyToggle(
+                          value: videoData.reverse,
+                          onChanged: (v) => videoData.reverse = v,
+                          icon: Icons.sync_alt,
+                          activeColor: colorScheme.onTertiaryContainer),
+                    ),
                     const SizedBox(width: 4),
-                    NnyySelectButton(
-                        segments: reverseList(
-                            List.generate(pages, (p) => p), videoData.reverse),
-                        selected: page.value,
-                        onChanged: (v) => page.value = v,
-                        getText: (v) =>
-                            '${v * itemsPrePage + 1} - ${(v + 1) * itemsPrePage}'),
+                    FocusTraversalOrder(
+                      order: const NumericFocusOrder(-1),
+                      child: NnyySelectButton(
+                          segments: reverseList(List.generate(pages, (p) => p),
+                              videoData.reverse),
+                          selected: page.value,
+                          onChanged: (v) => page.value = v,
+                          getText: (v) =>
+                              '${v * itemsPrePage + 1} - ${(v + 1) * itemsPrePage}'),
+                    ),
                   ],
                 ),
               ),
@@ -494,7 +518,9 @@ class _VideoEpList extends HookWidget {
               children: reverseList(
                   detail.eps.keys
                       .skip(page.value * itemsPrePage)
-                      .map((e) => _EpButton(key: Key(e), e))
+                      .mapIndexed((i, e) => FocusTraversalOrder(
+                          order: NumericFocusOrder(i.toDouble()),
+                          child: _EpButton(key: Key(e), e)))
                       .take(itemsPrePage)
                       .toList(),
                   videoData.reverse),

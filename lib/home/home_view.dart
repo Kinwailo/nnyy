@@ -108,83 +108,106 @@ class _Filter extends HookWidget {
     useListenable(NnyyData.data);
     return DefaultTextStyle.merge(
       style: Theme.of(context).textTheme.titleMedium,
-      child: Focus(
-        focusNode: home.filterFocus,
-        onFocusChange: (v) {
-          if (v) home.canPop.value = true;
-        },
-        child: Row(
-          children: [
-            const SizedBox(width: 8),
-            NnyySelectButton(
-              segments: HomeController.modeList,
-              selected: NnyyData.data.mode,
-              onChanged: (v) => NnyyData.data.mode = v,
-            ),
-            const SizedBox(width: 16),
-            if (HomeController.kindMap.containsKey(NnyyData.data.mode)) ...[
-              const Text('排序'),
-              const SizedBox(width: 16),
-              NnyySelectButton(
-                segments: HomeController.sortList,
-                selected: NnyyData.data.sort,
-                onChanged: (v) => NnyyData.data.sort = v,
+      child: NnyyFocusGroup(
+        child: Focus(
+          focusNode: home.filterFocus,
+          onFocusChange: (v) {
+            if (v) home.canPop.value = true;
+          },
+          child: Row(
+            children: [
+              const SizedBox(width: 8),
+              FocusTraversalOrder(
+                order: const NumericFocusOrder(0),
+                child: NnyySelectButton(
+                  segments: HomeController.modeList,
+                  selected: NnyyData.data.mode,
+                  onChanged: (v) => NnyyData.data.mode = v,
+                ),
               ),
               const SizedBox(width: 16),
-              const Text('分類'),
-              const SizedBox(width: 8),
-              DropdownButton(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                isDense: true,
-                value: NnyyData.data.genre,
-                items: [
-                  ...HomeController.genreList
-                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                ],
-                onChanged: (v) {
-                  if (v != null) NnyyData.data.genre = v;
-                },
-              ),
-              const SizedBox(width: 8),
-              const Text('地區'),
-              const SizedBox(width: 8),
-              DropdownButton(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                isDense: true,
-                value: NnyyData.data.country,
-                items: [
-                  ...HomeController.countryList
-                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                ],
-                onChanged: (v) {
-                  if (v != null) NnyyData.data.country = v;
-                },
-              ),
-              const SizedBox(width: 8),
-              const Text('年代'),
-              const SizedBox(width: 8),
-              DropdownButton(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                isDense: true,
-                value: NnyyData.data.year,
-                items: [
-                  ...HomeController.yearList
-                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                ],
-                onChanged: (v) {
-                  if (v != null) NnyyData.data.year = v;
-                },
-              ),
+              if (HomeController.kindMap.containsKey(NnyyData.data.mode)) ...[
+                const Text('排序'),
+                const SizedBox(width: 16),
+                FocusTraversalOrder(
+                  order: const NumericFocusOrder(1),
+                  child: NnyySelectButton(
+                    segments: HomeController.sortList,
+                    selected: NnyyData.data.sort,
+                    onChanged: (v) => NnyyData.data.sort = v,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                const Text('分類'),
+                const SizedBox(width: 8),
+                FocusTraversalOrder(
+                  order: const NumericFocusOrder(2),
+                  child: DropdownButton(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    isDense: true,
+                    value: NnyyData.data.genre,
+                    items: [
+                      ...HomeController.genreList.map(
+                          (e) => DropdownMenuItem(value: e, child: Text(e)))
+                    ],
+                    onChanged: (v) {
+                      if (v != null) NnyyData.data.genre = v;
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Text('地區'),
+                const SizedBox(width: 8),
+                FocusTraversalOrder(
+                  order: const NumericFocusOrder(3),
+                  child: DropdownButton(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    isDense: true,
+                    value: NnyyData.data.country,
+                    items: [
+                      ...HomeController.countryList.map(
+                          (e) => DropdownMenuItem(value: e, child: Text(e)))
+                    ],
+                    onChanged: (v) {
+                      if (v != null) NnyyData.data.country = v;
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Text('年代'),
+                const SizedBox(width: 8),
+                FocusTraversalOrder(
+                  order: const NumericFocusOrder(4),
+                  child: DropdownButton(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    isDense: true,
+                    value: NnyyData.data.year,
+                    items: [
+                      ...HomeController.yearList.map(
+                          (e) => DropdownMenuItem(value: e, child: Text(e)))
+                    ],
+                    onChanged: (v) {
+                      if (v != null) NnyyData.data.year = v;
+                    },
+                  ),
+                ),
+              ],
+              if (NnyyData.data.mode == HomeController.modeSearch)
+                FocusTraversalOrder(
+                  order: const NumericFocusOrder(5),
+                  child: NnyySearchBox(
+                    text: HomeController.i.search,
+                    width: 200,
+                    height: 32,
+                    onSearch: home.searchVideo,
+                    onClear: home.clearSearch,
+                  ),
+                ),
             ],
-            if (NnyyData.data.mode == HomeController.modeSearch)
-              NnyySearchBox(
-                text: HomeController.i.search,
-                width: 200,
-                height: 32,
-                onSearch: home.searchVideo,
-                onClear: home.clearSearch,
-              ),
-          ],
+          ),
         ),
       ),
     );
@@ -216,9 +239,12 @@ class _Grid extends HookWidget {
                 ),
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    return index < home.videoList.value.length
-                        ? VideoCard(home.videoList.value[index])
-                        : MoreCard(key: UniqueKey());
+                    return FocusTraversalOrder(
+                      order: NumericFocusOrder(index.toDouble()),
+                      child: index < home.videoList.value.length
+                          ? VideoCard(home.videoList.value[index])
+                          : MoreCard(key: UniqueKey()),
+                    );
                   },
                   childCount:
                       home.videoList.value.length + (home.noMore ? 0 : 1),

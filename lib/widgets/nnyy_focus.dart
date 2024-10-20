@@ -25,7 +25,7 @@ class NnyyFocusGroup extends HookWidget {
     return Actions(
       actions: {DirectionalFocusIntent: NnyyFocusGroupAction()},
       child: FocusTraversalGroup(
-        policy: WidgetOrderTraversalPolicy(
+        policy: OrderedTraversalPolicy(
           requestFocusCallback: (node,
               {alignment, alignmentPolicy, curve, duration}) {
             node.requestFocus();
