@@ -32,6 +32,8 @@ class NnyyData extends ChangeNotifier {
       StoreValue(name, 'mode', HomeController.kindMap.keys.first, cloud: cloud);
   late final _sort =
       StoreValue(name, 'sort', HomeController.sortList.first, cloud: cloud);
+  late final _kind =
+      StoreValue(name, 'kind', HomeController.kindList.first, cloud: cloud);
   late final _genre =
       StoreValue(name, 'genre', HomeController.genreList.first, cloud: cloud);
   late final _country = StoreValue(
@@ -56,6 +58,8 @@ class NnyyData extends ChangeNotifier {
   set mode(String v) => _mode.value = v;
   String get sort => _sort.value;
   set sort(String v) => _sort.value = v;
+  String get kind => _kind.value;
+  set kind(String v) => _kind.value = v;
   String get genre => _genre.value;
   set genre(String v) => _genre.value = v;
   String get country => _country.value;

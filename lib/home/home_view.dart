@@ -132,10 +132,25 @@ class _Filter extends HookWidget {
                   onChanged: (v) => NnyyData.data.mode = v,
                 ),
               ),
-              const SizedBox(width: 16),
-              if (HomeController.kindMap.containsKey(NnyyData.data.mode)) ...[
-                const Text('排序'),
-                const SizedBox(width: 16),
+              const SizedBox(width: 8),
+              if (NnyyData.data.mode == HomeController.modeFilter) ...[
+                FocusTraversalOrder(
+                  order: const NumericFocusOrder(0.5),
+                  child: DropdownButton(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    isDense: true,
+                    value: NnyyData.data.kind,
+                    items: [
+                      ...HomeController.kindList.map(
+                          (e) => DropdownMenuItem(value: e, child: Text(e)))
+                    ],
+                    onChanged: (v) {
+                      if (v != null) NnyyData.data.kind = v;
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
                 FocusTraversalOrder(
                   order: const NumericFocusOrder(1),
                   child: NnyySelectButton(
@@ -202,7 +217,8 @@ class _Filter extends HookWidget {
                   ),
                 ),
               ],
-              if (NnyyData.data.mode == HomeController.modeSearch)
+              if (NnyyData.data.mode == HomeController.modeSearch) ...[
+                const SizedBox(width: 8),
                 FocusTraversalOrder(
                   order: const NumericFocusOrder(5),
                   child: NnyySearchBox(
@@ -213,6 +229,7 @@ class _Filter extends HookWidget {
                     onClear: home.clearSearch,
                   ),
                 ),
+              ]
             ],
           ),
         ),
