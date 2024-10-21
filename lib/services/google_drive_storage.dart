@@ -68,7 +68,7 @@ class GoogleDriveStorage extends CloudStorage with ChangeNotifier {
         notifyListeners();
         return;
       }
-      bool auth = await _checkAccess();
+      bool auth = await checkAccess();
       if (auth) {
         try {
           final client = await _googleSignIn.authenticatedClient();
@@ -83,10 +83,11 @@ class GoogleDriveStorage extends CloudStorage with ChangeNotifier {
     });
   }
 
-  Future<bool> _checkAccess() async {
+  Future<bool> checkAccess() async {
     if (!kIsWeb) return true;
     var auth = await _googleSignIn.canAccessScopes(_scopes);
     if (!auth) auth = await _googleSignIn.requestScopes(_scopes);
+    if (!auth) await _googleSignIn.signOut();
     return auth;
   }
 
@@ -186,7 +187,7 @@ class GoogleDriveStorage extends CloudStorage with ChangeNotifier {
 
   @override
   Future<Map<String, Map<String, dynamic>>> read() async {
-    if (!await _checkAccess()) return {};
+    if (!await checkAccess()) return {};
 
     _syncing.value = true;
     try {
@@ -214,7 +215,7 @@ class GoogleDriveStorage extends CloudStorage with ChangeNotifier {
 
   @override
   Future<void> write(Map<String, Map<String, dynamic>> data) async {
-    if (!await _checkAccess()) return;
+    if (!await checkAccess()) return;
 
     final id = await _getFileId();
     if (_driveApi == null || id == null) return;
@@ -229,7 +230,7 @@ class GoogleDriveStorage extends CloudStorage with ChangeNotifier {
 
   @override
   Future<void> delete() async {
-    if (!await _checkAccess()) return;
+    if (!await checkAccess()) return;
 
     _syncing.value = false;
     try {

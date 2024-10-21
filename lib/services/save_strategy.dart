@@ -145,6 +145,7 @@ class SaveStrategy implements PopEntry {
     if (i._syncingOnExit.value) return;
     i._syncingOnExit.value = true;
     await _sync();
+    if (NnyyData.loginExpired.value) await Future.delayed(Durations.extralong4);
     i._syncingOnExit.value = false;
     canPopNotifier.value = true;
     if (pop) SystemNavigator.pop();

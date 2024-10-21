@@ -37,14 +37,21 @@ class HomeView extends HookWidget {
     useValueChanged(SaveStrategy.i.syncingOnExit.value, (_, void __) {
       final messager = ScaffoldMessenger.of(context)..clearSnackBars();
       if (!SaveStrategy.i.syncingOnExit.value) return;
-      const widget = Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox.square(dimension: 24, child: CircularProgressIndicator()),
-          SizedBox(width: 12),
-          Text('Syncing to cloud storage...'),
-        ],
-      );
+      final widget = HookBuilder(builder: (context) {
+        useListenable(NnyyData.loginExpired);
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox.square(
+                dimension: 24, child: CircularProgressIndicator()),
+            const SizedBox(width: 12),
+            if (NnyyData.loginExpired.value)
+              const Text('Connection to cloud is expired, please re-login.')
+            else
+              const Text('Syncing to cloud storage...'),
+          ],
+        );
+      });
       Future(() {
         messager.showSnackBar(getSnackBar(widget));
         home.clearError();
