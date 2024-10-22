@@ -229,6 +229,7 @@ class VideoController {
       case 'meta':
         _length = int.tryParse(event[1]) ?? 0;
         _startWebVideo();
+        _updateHistory();
         break;
       case 'ended':
         next(1, auto: true);
