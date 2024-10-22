@@ -23,7 +23,7 @@ class HomeView extends HookWidget {
     useAutomaticKeepAlive();
     useEffect(() {
       SaveStrategy.i.registerPopEntry(route);
-      NnyyData.googleDriveStorage.signInSilently();
+      NnyyData.autoSignInCloud();
       return null;
     }, []);
     useValueChanged(home.error.value, (_, void __) {
@@ -59,7 +59,6 @@ class HomeView extends HookWidget {
     });
     useListenable(home.canPop);
     useListenable(home.error);
-    useListenable(NnyyData.googleDriveStorage);
     useListenable(SaveStrategy.i.syncingOnExit);
     return IgnorePointer(
       ignoring: SaveStrategy.i.syncingOnExit.value,
@@ -92,7 +91,7 @@ class HomeView extends HookWidget {
                     padding: const EdgeInsets.all(4),
                     child: SizedBox.square(
                       dimension: 40,
-                      child: NnyyData.googleDriveStorage.signInAvatar(),
+                      child: NnyyData.cloudAvatar(),
                     ),
                   ),
                 ),

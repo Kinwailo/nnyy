@@ -83,22 +83,15 @@ class GoogleDriveStorage extends CloudStorage with ChangeNotifier {
     });
   }
 
-  Future<bool> checkAccess() async {
-    if (!kIsWeb) return true;
-    var auth = await _googleSignIn.canAccessScopes(_scopes);
-    if (!auth) auth = await _googleSignIn.requestScopes(_scopes);
-    if (!auth) await _googleSignIn.signOut();
-    return auth;
-  }
-
   Widget circleAvatar() {
     return ListenableBuilder(
       listenable: _syncing,
       builder: (_, __) => user == null
-          ? const Icon(Icons.account_box, size: 32)
+          ? const Icon(Icons.account_circle, size: 32)
           : Stack(
               children: [
-                GoogleUserCircleAvatar(identity: user!),
+                GoogleUserCircleAvatar(
+                    identity: user!, foregroundColor: Colors.white),
                 if (_syncing.value)
                   const Positioned(
                     right: 0,
@@ -148,6 +141,15 @@ class GoogleDriveStorage extends CloudStorage with ChangeNotifier {
                   onPressed: signIn, child: const Text('Sign in with Google'))
           : ElevatedButton(onPressed: signOut, child: const Text('Sign out')),
     );
+  }
+
+  Future<bool> checkAccess() async {
+    if (!isLoggedIn) return false;
+    if (!kIsWeb) return true;
+    var auth = await _googleSignIn.canAccessScopes(_scopes);
+    if (!auth) auth = await _googleSignIn.requestScopes(_scopes);
+    if (!auth) await _googleSignIn.signOut();
+    return auth;
   }
 
   Future<void> signInSilently() async {

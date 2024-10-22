@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 
 import '../home/home_controller.dart';
@@ -17,7 +18,7 @@ class NnyyData extends ChangeNotifier {
   }
 
   static const String name = 'preferences';
-  static final googleDriveStorage = GoogleDriveStorage();
+  static final _googleDriveStorage = GoogleDriveStorage();
 
   static NnyyData? _data;
   static NnyyData get data => _data ??= NnyyData._(cloud: false);
@@ -70,10 +71,10 @@ class NnyyData extends ChangeNotifier {
   static final videos = NnyyVideoCollection._();
 
   static void init() {
-    googleDriveStorage.addListener(() {
-      if (googleDriveStorage.isLoggedIn) syncFromCloud();
+    _googleDriveStorage.addListener(() {
+      if (_googleDriveStorage.isLoggedIn) syncFromCloud();
     });
-    DataStore.cloud = googleDriveStorage;
+    DataStore.cloud = _googleDriveStorage;
     DataStore.changedSinceSync.addListener(() => _syncRequired.value = DataStore
         .changedSinceSync.value
         .whereNot((e) => e == name)
@@ -98,15 +99,24 @@ class NnyyData extends ChangeNotifier {
     }
   }
 
+  static void autoSignInCloud() {
+    _googleDriveStorage.signInSilently();
+  }
+
+  static Widget cloudAvatar() {
+    return _googleDriveStorage.signInAvatar();
+  }
+
   static Future<void> syncFromCloud() async {
     await DataStore.loadOnCloud();
     final list = DataStore.list(cloud: true);
     await _sync(list, toCloud: false);
+    DataStore.resetSyncState();
   }
 
   static Future<void> syncToCloud() async {
     if (!_syncRequired.value) return;
-    if (!await googleDriveStorage.checkAccess()) {
+    if (!await _googleDriveStorage.checkAccess()) {
       _loginExpired.value = true;
       return;
     }

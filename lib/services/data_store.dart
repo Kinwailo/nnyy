@@ -101,6 +101,10 @@ class DataStore extends ChangeNotifier {
     }
   }
 
+  static void resetSyncState() {
+    _changedSinceSync.value = {};
+  }
+
   static Future<void> loadOnCloud() async {
     if (!isCloudReady) return;
     final data = await _cloud!.read();
