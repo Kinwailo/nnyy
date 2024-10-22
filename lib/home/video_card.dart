@@ -23,6 +23,7 @@ class VideoCard extends HookWidget {
     final video = NnyyData.videos[info.id];
     final fav = video.fav;
     final focused = useState(false);
+    final twoLines = useState(false);
     final action = CallbackAction(onInvoke: (_) {
       VideoController.i.loadVideoDetail(info);
       VideoView.show(context);
@@ -76,12 +77,27 @@ class VideoCard extends HookWidget {
                         : const {
                             HttpHeaders.userAgentHeader: VideoService.userAgent
                           },
-                    imageBuilder: (context, imageProvider) => Container(
+                    imageBuilder: (context, imageProvider) => DecoratedBox(
+                      position: DecorationPosition.foreground,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        image: DecorationImage(
-                          image: imageProvider,
-                          fit: BoxFit.cover,
+                        gradient: !twoLines.value
+                            ? null
+                            : const LinearGradient(
+                                begin: Alignment.center,
+                                end: Alignment.bottomCenter,
+                                colors: <Color>[
+                                  Color(0x00000000),
+                                  Color(0x80000000),
+                                ],
+                              ),
+                      ),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          image: DecorationImage(
+                            image: imageProvider,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                     ),
@@ -127,23 +143,32 @@ class VideoCard extends HookWidget {
                     ),
                   ),
                 if (!coverOnly)
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: _OutlineText(
-                      strokeWidth: 2,
-                      strokeColor: Colors.black.withOpacity(0.6),
-                      child: Text(
-                        info.title,
-                        maxLines: 2,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,
-                        overflow: TextOverflow.ellipsis,
+                  LayoutBuilder(builder: (context, constraints) {
+                    final style = Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontWeight: FontWeight.bold);
+                    var tp = TextPainter(
+                        text: TextSpan(text: info.title, style: style),
+                        textDirection: Directionality.of(context));
+                    tp.layout(maxWidth: constraints.maxWidth);
+                    Future(() =>
+                        twoLines.value = tp.computeLineMetrics().length > 1);
+                    return Align(
+                      alignment: Alignment.bottomCenter,
+                      child: _OutlineText(
+                        strokeWidth: 2,
+                        strokeColor: Colors.black.withOpacity(0.6),
+                        child: Text(
+                          info.title,
+                          maxLines: 2,
+                          style: style,
+                          textAlign: TextAlign.center,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                  ),
+                    );
+                  }),
                 if (!coverOnly)
                   Material(
                     color: Colors.transparent,
