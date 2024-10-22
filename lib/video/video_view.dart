@@ -475,7 +475,14 @@ class _VideoEpList extends HookWidget {
     final length = detail.eps.length;
     final pages = (length / itemsPrePage).ceil();
     final videoData = NnyyData.videos[detail.info.id];
-    final page = useState(videoData.reverse ? pages - 1 : 0);
+    final ep = detail.eps.keys.toList().indexOf(videoData.ep);
+    final findPage = useCallback(() => ep == -1
+        ? 0
+        : videoData.reverse
+            ? ((length - ep - 1) / itemsPrePage).floor()
+            : (ep / itemsPrePage).floor());
+    final page = useState(findPage());
+    useValueChanged(videoData.reverse, (_, void __) => page.value = findPage());
     useListenable(videoData);
     return NnyyFocusGroup(
       child: Column(
