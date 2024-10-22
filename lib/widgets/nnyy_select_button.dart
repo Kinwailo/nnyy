@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
@@ -19,12 +22,28 @@ class NnyySelectButton<T> extends HookWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final set = useState({selected});
+    final list = useMemoized(
+        () => List.generate(
+            segments.length, (_) => FocusNode(canRequestFocus: false)),
+        [segments.length]);
+    final index = max(0, segments.indexOf(selected));
+    if (list[index].context != null) {
+      Scrollable.ensureVisible(
+        list[index].context!,
+        alignment: 0.9,
+        alignmentPolicy: ScrollPositionAlignmentPolicy.explicit,
+        duration: Durations.short4,
+        curve: Curves.ease,
+      );
+    }
     useValueChanged(selected, (_, void __) => set.value = {selected});
     return SegmentedButton(
       segments: segments
-          .map((e) => ButtonSegment(
+          .mapIndexed((i, e) => ButtonSegment(
               value: e,
-              label: Text(getText == null ? e.toString() : getText!(e))))
+              label: Focus(
+                  focusNode: list[i],
+                  child: Text(getText == null ? e.toString() : getText!(e)))))
           .toList(),
       showSelectedIcon: false,
       selected: set.value,

@@ -475,12 +475,14 @@ class _VideoEpList extends HookWidget {
     final length = detail.eps.length;
     final pages = (length / itemsPrePage).ceil();
     final videoData = NnyyData.videos[detail.info.id];
-    final ep = detail.eps.keys.toList().indexOf(videoData.ep);
-    final findPage = useCallback(() => ep == -1
-        ? 0
-        : videoData.reverse
-            ? ((length - ep - 1) / itemsPrePage).floor()
-            : (ep / itemsPrePage).floor());
+    final findPage = useCallback(() {
+      final ep = detail.eps.keys.toList().indexOf(videoData.ep);
+      return ep == -1
+          ? 0
+          : videoData.reverse
+              ? ((length - ep - 1) / itemsPrePage).floor()
+              : (ep / itemsPrePage).floor();
+    });
     final page = useState(findPage());
     useValueChanged(videoData.reverse, (_, void __) => page.value = findPage());
     useListenable(videoData);
@@ -492,31 +494,33 @@ class _VideoEpList extends HookWidget {
             visible: pages > 1,
             child: Padding(
               padding: const EdgeInsets.only(bottom: 8),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    FocusTraversalOrder(
-                      order: const NumericFocusOrder(-2),
-                      child: NnyyToggle(
-                          value: videoData.reverse,
-                          onChanged: (v) => videoData.reverse = v,
-                          icon: Icons.sync_alt,
-                          activeColor: colorScheme.onTertiaryContainer),
+              child: Row(
+                children: [
+                  FocusTraversalOrder(
+                    order: const NumericFocusOrder(-2),
+                    child: NnyyToggle(
+                        value: videoData.reverse,
+                        onChanged: (v) => videoData.reverse = v,
+                        icon: Icons.sync_alt,
+                        activeColor: colorScheme.onTertiaryContainer),
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: FocusTraversalOrder(
+                        order: const NumericFocusOrder(-1),
+                        child: NnyySelectButton(
+                            segments: List.generate(pages, (p) => p),
+                            selected: page.value,
+                            onChanged: (v) => page.value = v,
+                            getText: (v) => videoData.reverse
+                                ? '${length - v * itemsPrePage} - ${max(1, length - (v + 1) * itemsPrePage + 1)}'
+                                : '${v * itemsPrePage + 1} - ${min(length, (v + 1) * itemsPrePage)}'),
+                      ),
                     ),
-                    const SizedBox(width: 4),
-                    FocusTraversalOrder(
-                      order: const NumericFocusOrder(-1),
-                      child: NnyySelectButton(
-                          segments: List.generate(pages, (p) => p),
-                          selected: page.value,
-                          onChanged: (v) => page.value = v,
-                          getText: (v) => videoData.reverse
-                              ? '${length - v * itemsPrePage} - ${max(1, length - (v + 1) * itemsPrePage + 1)}'
-                              : '${v * itemsPrePage + 1} - ${min(length, (v + 1) * itemsPrePage)}'),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
