@@ -22,7 +22,7 @@ Future<void> main() async {
   HomeController.i;
   NnyyData.init();
   SaveStrategy.init();
-  await BrowserContextMenu.disableContextMenu();
+  if (kIsWeb) await BrowserContextMenu.disableContextMenu();
   runApp(const MainApp());
 }
 
