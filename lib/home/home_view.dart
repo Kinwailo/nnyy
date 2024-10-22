@@ -38,15 +38,15 @@ class HomeView extends HookWidget {
       final messager = ScaffoldMessenger.of(context)..clearSnackBars();
       if (!SaveStrategy.i.syncingOnExit.value) return;
       final widget = HookBuilder(builder: (context) {
-        useListenable(NnyyData.loginExpired);
+        useListenable(NnyyData.lostConnection);
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             const SizedBox.square(
                 dimension: 24, child: CircularProgressIndicator()),
             const SizedBox(width: 12),
-            if (NnyyData.loginExpired.value)
-              const Text('Connection to cloud is expired, please re-login.')
+            if (NnyyData.lostConnection.value)
+              const Text('Lost connection to cloud, please re-login.')
             else
               const Text('Syncing to cloud storage...'),
           ],

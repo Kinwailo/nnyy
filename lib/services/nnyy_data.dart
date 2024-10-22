@@ -26,8 +26,8 @@ class NnyyData extends ChangeNotifier {
   final bool cloud;
   static final _syncRequired = ValueNotifier(false);
   static ValueListenable<bool> get syncRequired => _syncRequired;
-  static final _loginExpired = ValueNotifier(false);
-  static ValueListenable<bool> get loginExpired => _loginExpired;
+  static final _lostConnection = ValueNotifier(false);
+  static ValueListenable<bool> get lostConnection => _lostConnection;
 
   late final _mode =
       StoreValue(name, 'mode', HomeController.kindMap.keys.first, cloud: cloud);
@@ -115,9 +115,10 @@ class NnyyData extends ChangeNotifier {
   }
 
   static Future<void> syncToCloud() async {
+    if (!_googleDriveStorage.isLoggedIn) return;
     if (!_syncRequired.value) return;
     if (!await _googleDriveStorage.checkAccess()) {
-      _loginExpired.value = true;
+      _lostConnection.value = true;
       return;
     }
     await DataStore.loadOnCloud();
