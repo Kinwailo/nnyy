@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -456,8 +458,8 @@ class _VideoSiteList extends HookWidget {
 class _VideoEpList extends HookWidget {
   const _VideoEpList();
 
-  List<T> reverseList<T>(List<T> list, bool reverse) {
-    if (reverse) return list.reversed.toList();
+  Iterable<T> reverseList<T>(List<T> list, bool reverse) {
+    if (reverse) return list.reversed;
     return list;
   }
 
@@ -467,7 +469,8 @@ class _VideoEpList extends HookWidget {
     final controller = VideoController.i;
     final detail = controller.detail.value!;
     const itemsPrePage = 100;
-    final pages = (detail.eps.length / itemsPrePage).ceil();
+    final length = detail.eps.length;
+    final pages = (length / itemsPrePage).ceil();
     final videoData = NnyyData.videos[detail.info.id];
     final page = useState(videoData.reverse ? pages - 1 : 0);
     useListenable(videoData);
@@ -495,12 +498,12 @@ class _VideoEpList extends HookWidget {
                     FocusTraversalOrder(
                       order: const NumericFocusOrder(-1),
                       child: NnyySelectButton(
-                          segments: reverseList(List.generate(pages, (p) => p),
-                              videoData.reverse),
+                          segments: List.generate(pages, (p) => p),
                           selected: page.value,
                           onChanged: (v) => page.value = v,
-                          getText: (v) =>
-                              '${v * itemsPrePage + 1} - ${(v + 1) * itemsPrePage}'),
+                          getText: (v) => videoData.reverse
+                              ? '${length - v * itemsPrePage} - ${max(1, length - (v + 1) * itemsPrePage + 1)}'
+                              : '${v * itemsPrePage + 1} - ${min(length, (v + 1) * itemsPrePage)}'),
                     ),
                   ],
                 ),
@@ -515,15 +518,13 @@ class _VideoEpList extends HookWidget {
               childAspectRatio: 112 / 36,
               mainAxisSpacing: 8,
               crossAxisSpacing: 8,
-              children: reverseList(
-                  detail.eps.keys
-                      .skip(page.value * itemsPrePage)
-                      .mapIndexed((i, e) => FocusTraversalOrder(
-                          order: NumericFocusOrder(i.toDouble()),
-                          child: _EpButton(key: Key(e), e)))
-                      .take(itemsPrePage)
-                      .toList(),
-                  videoData.reverse),
+              children: reverseList(detail.eps.keys.toList(), videoData.reverse)
+                  .skip(page.value * itemsPrePage)
+                  .mapIndexed((i, e) => FocusTraversalOrder(
+                      order: NumericFocusOrder(i.toDouble()),
+                      child: _EpButton(key: Key(e), e)))
+                  .take(itemsPrePage)
+                  .toList(),
             ),
           ),
         ],
