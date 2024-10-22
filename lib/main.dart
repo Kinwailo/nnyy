@@ -48,20 +48,6 @@ class MainApp extends StatelessWidget {
       }),
       navigatorObservers: [SaveStrategy.navigatorChangeObserver],
       home: const HomeView(),
-      builder: (context, child) {
-        final colorScheme = Theme.of(context).colorScheme;
-        return IconButtonTheme(
-            data: IconButtonThemeData(
-                style: IconButton.styleFrom().copyWith(
-                    overlayColor: WidgetStateProperty.resolveWith(
-              (set) => set.contains(WidgetState.focused) &&
-                      !set.contains(WidgetState.selected) &&
-                      !set.contains(WidgetState.hovered)
-                  ? colorScheme.onSecondaryFixedVariant
-                  : null,
-            ))),
-            child: child!);
-      },
     );
   }
 }

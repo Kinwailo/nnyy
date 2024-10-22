@@ -21,6 +21,7 @@ class NnyyToggle extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final checked = useState(value);
     final callback = useCallback(() {
       checked.value = !checked.value;
@@ -28,9 +29,16 @@ class NnyyToggle extends HookWidget {
     });
     useValueChanged(value, (_, void __) => checked.value = value);
     return IconButton(
-      onPressed: callback,
-      color: checked.value ? activeColor ?? color : color,
-      icon: Icon(checked.value ? activeIcon ?? icon : icon),
-    );
+        onPressed: callback,
+        color: checked.value ? activeColor ?? color : color,
+        icon: Icon(checked.value ? activeIcon ?? icon : icon),
+        style: IconButton.styleFrom().copyWith(
+            overlayColor: WidgetStateProperty.resolveWith(
+          (set) => set.contains(WidgetState.focused) &&
+                  !set.contains(WidgetState.selected) &&
+                  !set.contains(WidgetState.hovered)
+              ? colorScheme.onSecondaryFixedVariant
+              : null,
+        )));
   }
 }
