@@ -126,7 +126,8 @@ class _VideoDetail extends HookWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const _VideoTitle(),
-                    ExcludeFocus(child: SelectableText(detail.intro)),
+                    ExcludeFocus(
+                        child: SelectionArea(child: Text(detail.intro))),
                     const _VideoMeta(),
                     if (kIsWeb) const _VideoWeb(),
                     Visibility(
@@ -174,7 +175,7 @@ class _VideoDetailV extends HookWidget {
             Expanded(child: _VideoInfo()),
           ],
         ),
-        ExcludeFocus(child: SelectableText(detail.intro)),
+        ExcludeFocus(child: SelectionArea(child: Text(detail.intro))),
         const _VideoMeta(),
         if (kIsWeb) const _VideoWeb(),
         Visibility(
@@ -280,13 +281,15 @@ class _VideoTitle extends HookWidget {
         const BackButton(),
         const SizedBox(width: 8),
         ExcludeFocus(
-          child: SelectableText(
-            '${detail.info.title}${year == null ? '' : ' ($year)'}',
-            style: Theme.of(context)
-                .textTheme
-                .headlineLarge
-                ?.copyWith(fontWeight: FontWeight.bold),
-            textAlign: TextAlign.left,
+          child: SelectionArea(
+            child: Text(
+              '${detail.info.title}${year == null ? '' : ' ($year)'}',
+              style: Theme.of(context)
+                  .textTheme
+                  .headlineLarge
+                  ?.copyWith(fontWeight: FontWeight.bold),
+              textAlign: TextAlign.left,
+            ),
           ),
         ),
       ],
