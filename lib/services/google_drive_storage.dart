@@ -147,8 +147,14 @@ class GoogleDriveStorage extends CloudStorage with ChangeNotifier {
     if (!isLoggedIn) return false;
     if (!kIsWeb) return true;
     var auth = await _googleSignIn.canAccessScopes(_scopes);
-    if (!auth) auth = await _googleSignIn.requestScopes(_scopes);
-    if (!auth) await _googleSignIn.signOut();
+    if (!auth) {
+      if (_driveApi != null) {
+        await _googleSignIn.signOut();
+        _googleSignIn.signInSilently();
+        return false;
+      }
+      auth = await _googleSignIn.requestScopes(_scopes);
+    }
     return auth;
   }
 

@@ -114,17 +114,18 @@ class NnyyData extends ChangeNotifier {
     DataStore.resetSyncState();
   }
 
-  static Future<void> syncToCloud() async {
-    if (!_googleDriveStorage.isLoggedIn) return;
-    if (!_syncRequired.value) return;
+  static Future<bool> syncToCloud() async {
+    if (!_googleDriveStorage.isLoggedIn) return false;
+    if (!_syncRequired.value) return false;
     if (!await _googleDriveStorage.checkAccess()) {
       _lostConnection.value = true;
-      return;
+      return false;
     }
     await DataStore.loadOnCloud();
     final list = DataStore.list();
     await _sync(list, toCloud: true);
     await DataStore.saveOnCloud();
+    return true;
   }
 
   static Future<void> _sync(List<String> list, {required bool toCloud}) async {

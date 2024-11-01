@@ -43,9 +43,9 @@ class SaveStrategy implements PopEntry {
     NnyyData.saveAll();
   }
 
-  static Future<void> _sync() async {
+  static Future<bool> _sync() async {
     _save();
-    await NnyyData.syncToCloud();
+    return await NnyyData.syncToCloud();
   }
 
   static void init() {
@@ -135,8 +135,7 @@ class SaveStrategy implements PopEntry {
     }
     while (_autoSyncPending != false) {
       _autoSyncPending = false;
-      await _sync();
-      await Future.delayed(const Duration(minutes: 5));
+      if (await _sync()) await Future.delayed(const Duration(minutes: 5));
     }
     _autoSyncPending = null;
   }
