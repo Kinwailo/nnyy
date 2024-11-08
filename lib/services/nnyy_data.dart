@@ -72,7 +72,7 @@ class NnyyData extends ChangeNotifier {
 
   static void init() {
     _googleDriveStorage.addListener(() {
-      if (_googleDriveStorage.isLoggedIn) syncFromCloud();
+      if (_googleDriveStorage.isLoggedIn) _sync();
     });
     DataStore.cloud = _googleDriveStorage;
     DataStore.changedSinceSync.addListener(() => _syncRequired.value = DataStore
@@ -107,13 +107,6 @@ class NnyyData extends ChangeNotifier {
     return _googleDriveStorage.signInAvatar();
   }
 
-  static Future<void> syncFromCloud() async {
-    await DataStore.loadOnCloud();
-    final list = DataStore.list(cloud: true);
-    await _sync(list, toCloud: false);
-    DataStore.resetSyncState();
-  }
-
   static Future<bool> syncToCloud() async {
     if (!_googleDriveStorage.isLoggedIn) return false;
     if (!_syncRequired.value) return false;
@@ -121,21 +114,20 @@ class NnyyData extends ChangeNotifier {
       _lostConnection.value = true;
       return false;
     }
-    await DataStore.loadOnCloud();
-    final list = DataStore.list();
-    await _sync(list, toCloud: true);
-    await DataStore.saveOnCloud();
+    await _sync();
     return true;
   }
 
-  static Future<void> _sync(List<String> list, {required bool toCloud}) async {
-    for (var n in list) {
-      if (n == name) await data.sync(toCloud: toCloud);
+  static Future<void> _sync() async {
+    await DataStore.loadOnCloud();
+    for (var n in {...DataStore.list(), ...DataStore.list(cloud: true)}) {
+      if (n == name) await data.sync();
       if (extension(n) == NnyyVideoData.name) {
         final id = int.tryParse(basenameWithoutExtension(n));
-        if (id != null) await videos[id].sync(toCloud: toCloud);
+        if (id != null) await videos[id].sync();
       }
     }
+    await DataStore.saveOnCloud();
   }
 
   void addSiteDuration(String site, int sec) {
@@ -154,11 +146,7 @@ class NnyyData extends ChangeNotifier {
     DataStore.store(name).save();
   }
 
-  Future<void> sync({required bool toCloud}) async {
-    // final cloud = NnyyData._(cloud: true);
-    // final from = toCloud ? this : cloud;
-    // final to = toCloud ? cloud : this;
-  }
+  Future<void> sync() async {}
 }
 
 class NnyyVideoCollection extends ChangeNotifier {
@@ -235,14 +223,15 @@ class NnyyVideoData extends ChangeNotifier {
     DataStore.store('$id${NnyyProgressData.name}').save();
   }
 
-  Future<void> sync({required bool toCloud}) async {
+  Future<void> sync() async {
     final cloudData = NnyyVideoData._(id, cloud: true);
-    if (!toCloud && cloudData.isOutdated && !cloudData.fav) {
+    if (cloudData.isOutdated && !cloudData.fav) {
       DataStore.store('$id$name').delete(cloud: true);
       DataStore.store('$id${NnyyProgressData.name}').delete(cloud: true);
       return;
     }
 
+    final toCloud = datetime.isAfter(cloudData.datetime);
     final from = toCloud ? this : cloudData;
     final to = toCloud ? cloudData : this;
     to.title = from.title;
@@ -251,7 +240,7 @@ class NnyyVideoData extends ChangeNotifier {
     to.next = from.next;
     to.skip = from.skip;
     to.reverse = from.reverse;
-    if (to.datetime.isBefore(from.datetime)) to.datetime = from.datetime;
+    to.datetime = from.datetime;
 
     final cloudProgress = cloudData.progress;
     final eps = {...progress.eps, ...cloudProgress.eps};
