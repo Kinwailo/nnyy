@@ -36,8 +36,11 @@ class VideoController {
   final _ui = ValueNotifier(false);
   final _lock = ValueNotifier(false);
   final _state = ValueNotifier<VideoState>(VideoState.rest);
-  final _paused = ValueNotifier(false);
+  final _paused = ValueNotifier(true);
   final _seek = ValueNotifier(0);
+  final _current = ValueNotifier(0);
+  final _length = ValueNotifier(1);
+  final _buffered = ValueNotifier(0);
 
   final _error = ValueNotifier('');
 
@@ -51,6 +54,9 @@ class VideoController {
   ValueListenable<VideoState> get state => _state;
   ValueListenable<bool> get paused => _paused;
   ValueListenable<int> get seek => _seek;
+  ValueListenable<int> get current => _current;
+  ValueListenable<int> get length => _length;
+  ValueListenable<int> get buffered => _buffered;
   ValueListenable<String> get error => _error;
 
   late final tapAction = RepeatAction(_tapUI);
@@ -66,8 +72,6 @@ class VideoController {
   WebViewXController? webview;
 
   var _url = '';
-  int _current = 0;
-  int _length = 0;
   int _counter = 0;
   final _stopwatch = Stopwatch();
   var _uiStart = DateTime.now();
@@ -214,27 +218,61 @@ class VideoController {
     var event = msg.split(':');
     switch (event[0]) {
       case 'play':
+        _paused.value = false;
         _stopwatch.start();
         break;
       case 'pause':
+        _paused.value = true;
         _stopwatch.stop();
         _updateHistory();
         break;
       case 'stop':
         break;
       case 'current':
-        _current = int.tryParse(event[1]) ?? 0;
-        // _updateHistory();
+        _current.value = int.tryParse(event[1]) ?? 0;
         break;
       case 'meta':
-        _length = int.tryParse(event[1]) ?? 0;
+        _length.value = int.tryParse(event[1]) ?? 1;
         _startWebVideo();
+        _updateWebControl();
         _updateHistory();
         break;
       case 'ended':
+        _paused.value = true;
         next(1, auto: true);
         break;
+      case 'next':
+        next(int.tryParse(event[1]) ?? 0);
+        break;
+      case 'buffered':
+        _buffered.value = int.tryParse(event[1]) ?? 0;
+        break;
+      case 'speed':
+        var speed = double.tryParse(event[1]) ?? 1.0;
+        var d = detail.value;
+        if (d != null) NnyyData.videos[d.info.id].speed = speed;
+        break;
+      case 'volume':
+        var volume = double.tryParse(event[1]) ?? 1.0;
+        var d = detail.value;
+        if (d != null) NnyyData.videos[d.info.id].volume = volume;
+        break;
+      case 'mute':
+        var mute = bool.tryParse(event[1]) ?? false;
+        var d = detail.value;
+        if (d != null) NnyyData.videos[d.info.id].mute = mute;
+        break;
       default:
+    }
+  }
+
+  void _updateWebControl() {
+    var d = detail.value;
+    if (d != null) {
+      var video = NnyyData.videos[d.info.id];
+      webview?.callJsMethod('changeSpeed', [video.speed]);
+      webview?.callJsMethod('changeVolume', [video.volume]);
+      webview?.callJsMethod('muteVideo', [video.mute]);
     }
   }
 
@@ -327,8 +365,8 @@ class VideoController {
       var pos = progress.current;
       var skip = NnyyData.videos[d.info.id].skip;
       pos = max(pos, skip);
-      if (pos < _length) {
-        _current = pos;
+      if (pos < _length.value) {
+        _current.value = pos;
         webview?.callJsMethod('seekVideo', ['$pos']);
       }
     }
@@ -369,8 +407,8 @@ class VideoController {
     _stopwatch.reset();
     var d = detail.value;
     if (d != null) {
-      var cur = kIsWeb ? _current : video.value!.value.position.inSeconds;
-      var len = kIsWeb ? _length : video.value!.value.duration.inSeconds;
+      var cur = kIsWeb ? _current.value : video.value!.value.position.inSeconds;
+      var len = kIsWeb ? _length.value : video.value!.value.duration.inSeconds;
       {
         var video = NnyyData.videos[d.info.id];
         video.progress[ep.value].data = VideoProgress(cur, cur, len);

@@ -129,7 +129,7 @@ class _VideoDetail extends HookWidget {
                     ExcludeFocus(
                         child: SelectionArea(child: Text(detail.intro))),
                     const _VideoMeta(),
-                    if (kIsWeb) const _VideoWeb(),
+                    if (kIsWeb) const _VideoEmbed(),
                     Visibility(
                       visible: controller.sites.isNotEmpty,
                       maintainState: true,
@@ -177,7 +177,7 @@ class _VideoDetailV extends HookWidget {
         ),
         ExcludeFocus(child: SelectionArea(child: Text(detail.intro))),
         const _VideoMeta(),
-        if (kIsWeb) const _VideoWeb(),
+        if (kIsWeb) const _VideoEmbed(),
         Visibility(
           visible: controller.sites.isNotEmpty,
           maintainState: true,
@@ -297,18 +297,17 @@ class _VideoTitle extends HookWidget {
   }
 }
 
-class _VideoWeb extends HookWidget {
-  const _VideoWeb();
+class _VideoEmbed extends HookWidget {
+  const _VideoEmbed();
 
   @override
   Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: 16 / 9,
-      child: Focus(
-        focusNode: VideoController.i.focusWebPlayer,
-        canRequestFocus: false,
-        child: const VideoWeb(),
-      ),
+    return Focus(
+      focusNode: VideoController.i.focusWebPlayer,
+      canRequestFocus: false,
+      child: const Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [VideoWeb(), VideoWebControl()]),
     );
   }
 }

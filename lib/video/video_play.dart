@@ -7,11 +7,14 @@ import 'video_controller.dart';
 
 extension DurationText on Duration {
   String get shortString {
-    final min = inSeconds ~/ 60;
-    final minText = min < 10 ? "0$min" : "$min";
+    var min = inSeconds ~/ 60;
+    final hr = min ~/ 60;
+    final hrText = hr > 0 ? '$hr:' : '';
+    min %= 60;
+    final minText = min < 10 ? '0$min' : '$min';
     final sec = inSeconds % 60;
-    final secText = sec < 10 ? "0$sec" : "$sec";
-    return '$minText:$secText';
+    final secText = sec < 10 ? '0$sec' : '$sec';
+    return '$hrText$minText:$secText';
   }
 }
 

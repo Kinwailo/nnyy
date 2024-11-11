@@ -186,6 +186,11 @@ class NnyyVideoData extends ChangeNotifier {
   late final _next = StoreValue('$id$name', 'next', true, cloud: cloud);
   late final _skip = StoreValue('$id$name', 'skip', 0, cloud: cloud);
   late final _reverse = StoreValue('$id$name', 'reverse', false, cloud: cloud);
+
+  late final _speed = StoreValue('$id$name', 'speed', 1.0, cloud: cloud);
+  late final _volume = StoreValue('$id$name', 'volume', 1.0, cloud: cloud);
+  late final _mute = StoreValue('$id$name', 'mute', false, cloud: cloud);
+
   late final _datetime = StoreValueFrom('$id$name', 'datetime', DateTime(2000),
       cloud: cloud,
       onSet: (v) => v.toString(),
@@ -203,6 +208,14 @@ class NnyyVideoData extends ChangeNotifier {
   set skip(int v) => _skip.value = v;
   bool get reverse => _reverse.value;
   set reverse(bool v) => _reverse.value = v;
+
+  double get speed => _speed.value;
+  set speed(double v) => _speed.value = v;
+  double get volume => _volume.value;
+  set volume(double v) => _volume.value = v;
+  bool get mute => _mute.value;
+  set mute(bool v) => _mute.value = v;
+
   DateTime get datetime => _datetime.value;
   set datetime(DateTime v) => _datetime.value = v;
 
@@ -240,6 +253,9 @@ class NnyyVideoData extends ChangeNotifier {
     to.next = from.next;
     to.skip = from.skip;
     to.reverse = from.reverse;
+    to.speed = from.speed;
+    to.volume = from.volume;
+    to.mute = from.mute;
     to.datetime = from.datetime;
 
     final cloudProgress = cloudData.progress;
