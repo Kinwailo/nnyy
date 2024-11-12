@@ -127,6 +127,7 @@ class NnyyData extends ChangeNotifier {
         if (id != null) await videos[id].sync();
       }
     }
+    saveAll();
     await DataStore.saveOnCloud();
   }
 
