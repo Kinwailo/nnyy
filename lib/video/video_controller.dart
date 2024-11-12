@@ -78,6 +78,9 @@ class VideoController {
 
   Future<void> loadVideoDetail(VideoInfo info) async {
     _detail.value = null;
+    _ep.value = '';
+    _site.value = '';
+    _state.value = VideoState.rest;
     try {
       _detail.value = await VideoService.i.getVideoDetail(info);
     } catch (e) {
@@ -85,9 +88,6 @@ class VideoController {
       return;
     }
     NnyyData.videos[info.id].title = info.title;
-    _ep.value = '';
-    _site.value = '';
-    _state.value = VideoState.rest;
   }
 
   void clearError() {
