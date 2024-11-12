@@ -72,7 +72,9 @@ class DataStore extends ChangeNotifier {
     if (value == get(key, cloud: cloud)) return;
     if (!cloud) {
       _changed = true;
-      _changedSinceSync.value = {...changedSinceSync.value, name};
+      if (isCloudReady) {
+        _changedSinceSync.value = {..._changedSinceSync.value, name};
+      }
     }
     _getData(cloud: cloud)[key] = value;
     if (!cloud && notify) notifyListeners();
