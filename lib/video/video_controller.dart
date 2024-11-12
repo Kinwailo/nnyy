@@ -87,6 +87,7 @@ class VideoController {
     NnyyData.videos[info.id].title = info.title;
     _ep.value = '';
     _site.value = '';
+    _state.value = VideoState.rest;
   }
 
   void clearError() {
