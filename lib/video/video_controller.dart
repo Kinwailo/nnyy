@@ -87,6 +87,9 @@ class VideoController {
     _ep.value = '';
     _site.value = '';
     _state.value = VideoState.rest;
+    _current.value = 0;
+    _length.value = 1;
+    _buffered.value = 0;
     try {
       _detail.value = await VideoService.i.getVideoDetail(info);
     } catch (e) {
