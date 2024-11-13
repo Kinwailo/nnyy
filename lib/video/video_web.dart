@@ -164,6 +164,8 @@ class VideoWebControl extends HookWidget {
                     videoData.mute ? Icons.volume_mute : Icons.volume_up,
                     onPressed: !ready ? null : action.mute),
               ),
+              VideoWebButton(Icons.settings,
+                  onPressed: controller.toggleSettings),
               VideoWebButton(Icons.fullscreen,
                   onPressed: !ready ? null : action.fullscreen),
             ],

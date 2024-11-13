@@ -44,6 +44,7 @@ class VideoController {
   final _buffered = ValueNotifier(0);
 
   final _error = ValueNotifier('');
+  final _settings = ValueNotifier(false);
 
   ValueListenable<VideoDetail?> get detail => _detail;
   ValueListenable<NnyyVideoData?> get videoData => _videoData;
@@ -61,6 +62,7 @@ class VideoController {
   ValueListenable<int> get length => _length;
   ValueListenable<int> get buffered => _buffered;
   ValueListenable<String> get error => _error;
+  ValueListenable<bool> get settings => _settings;
 
   late final tapAction = RepeatAction(_tapUI);
   late final rewindAction = RepeatAction(_rewind);
@@ -97,6 +99,10 @@ class VideoController {
 
   void clearError() {
     _error.value = '';
+  }
+
+  void toggleSettings() {
+    _settings.value = !_settings.value;
   }
 
   void _enterFullScreen() {

@@ -315,12 +315,15 @@ class _VideoEmbed extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    useListenable(VideoController.i.settings);
     return Focus(
       focusNode: VideoController.i.focusWebPlayer,
       canRequestFocus: false,
-      child: const Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [VideoWeb(), VideoWebControl(), VideoWebSettings()]),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        const VideoWeb(),
+        const VideoWebControl(),
+        if (VideoController.i.settings.value) const VideoWebSettings(),
+      ]),
     );
   }
 }
