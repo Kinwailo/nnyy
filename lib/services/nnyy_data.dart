@@ -5,9 +5,11 @@ import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 
 import '../home/home_controller.dart';
+import '../widgets/nnyy_shortcut.dart';
 import 'data_store.dart';
 import 'google_drive_storage.dart';
 
@@ -42,18 +44,67 @@ class NnyyData extends ChangeNotifier {
       cloud: cloud);
   late final _year =
       StoreValue(name, 'year', HomeController.yearList.first, cloud: cloud);
+
+  late final _shortcutPlay = StoreValueFrom(
+      name, 'shortcut.play', const SingleActivator(LogicalKeyboardKey.space),
+      onGet: (Map<String, dynamic> v) => v.toSingleActivator,
+      onSet: (v) => v.toMap);
+  late final _shortcutPrevious = StoreValueFrom(name, 'shortcut.previous',
+      const SingleActivator(LogicalKeyboardKey.arrowUp),
+      onGet: (Map<String, dynamic> v) => v.toSingleActivator,
+      onSet: (v) => v.toMap);
+  late final _shortcutNext = StoreValueFrom(name, 'shortcut.next',
+      const SingleActivator(LogicalKeyboardKey.arrowDown),
+      onGet: (Map<String, dynamic> v) => v.toSingleActivator,
+      onSet: (v) => v.toMap);
+  late final _shortcutRewind = StoreValueFrom(name, 'shortcut.rewind',
+      const SingleActivator(LogicalKeyboardKey.arrowLeft),
+      onGet: (Map<String, dynamic> v) => v.toSingleActivator,
+      onSet: (v) => v.toMap);
+  late final _shortcutForward = StoreValueFrom(name, 'shortcut.forward',
+      const SingleActivator(LogicalKeyboardKey.arrowRight),
+      onGet: (Map<String, dynamic> v) => v.toSingleActivator,
+      onSet: (v) => v.toMap);
+  late final _shortcutSpeedDown = StoreValueFrom(name, 'shortcut.speed.down',
+      const SingleActivator(LogicalKeyboardKey.arrowLeft, control: true),
+      onGet: (Map<String, dynamic> v) => v.toSingleActivator,
+      onSet: (v) => v.toMap);
+  late final _shortcutSpeedUp = StoreValueFrom(name, 'shortcut.speed.up',
+      const SingleActivator(LogicalKeyboardKey.arrowRight, control: true),
+      onGet: (Map<String, dynamic> v) => v.toSingleActivator,
+      onSet: (v) => v.toMap);
+  late final _shortcutSpeedReset = StoreValueFrom(name, 'shortcut.speed.reset',
+      const SingleActivator(LogicalKeyboardKey.home),
+      onGet: (Map<String, dynamic> v) => v.toSingleActivator,
+      onSet: (v) => v.toMap);
+  late final _shortcutVolumeDown = StoreValueFrom(name, 'shortcut.volume.down',
+      const SingleActivator(LogicalKeyboardKey.arrowDown, control: true),
+      onGet: (Map<String, dynamic> v) => v.toSingleActivator,
+      onSet: (v) => v.toMap);
+  late final _shortcutVolumeUp = StoreValueFrom(name, 'shortcut.volume.up',
+      const SingleActivator(LogicalKeyboardKey.arrowUp, control: true),
+      onGet: (Map<String, dynamic> v) => v.toSingleActivator,
+      onSet: (v) => v.toMap);
+  late final _shortcutMute = StoreValueFrom(
+      name, 'shortcut.mute', const SingleActivator(LogicalKeyboardKey.keyM),
+      onGet: (Map<String, dynamic> v) => v.toSingleActivator,
+      onSet: (v) => v.toMap);
+  late final _shortcutFullscreen = StoreValueFrom(name, 'shortcut.fullscreen',
+      const SingleActivator(LogicalKeyboardKey.keyF),
+      onGet: (Map<String, dynamic> v) => v.toSingleActivator,
+      onSet: (v) => v.toMap);
+
   late final _sites = StoreValueFrom(name, 'sites', <String, int>{},
       cloud: cloud,
       notify: false,
       onGet: (Map v) => Map<String, int>.from(v),
       onSet: (v) => v);
   late final signInData = StoreValueFrom(name, 'sign', <String, String>{},
-      cloud: cloud, notify: false, onGet: (String v) {
-    return Map<String, String>.from(
-        json.decode(utf8.decode(gzip.decode(base64.decode(v)))));
-  }, onSet: (v) {
-    return base64.encode(gzip.encode(utf8.encode(json.encode(v))));
-  });
+      cloud: cloud,
+      notify: false,
+      onGet: (String v) => Map<String, String>.from(
+          json.decode(utf8.decode(gzip.decode(base64.decode(v))))),
+      onSet: (v) => base64.encode(gzip.encode(utf8.encode(json.encode(v)))));
 
   String get mode => _mode.value;
   set mode(String v) => _mode.value = v;
@@ -67,6 +118,31 @@ class NnyyData extends ChangeNotifier {
   set country(String v) => _country.value = v;
   String get year => _year.value;
   set year(String v) => _year.value = v;
+
+  SingleActivator get shortcutPlay => _shortcutPlay.value;
+  set shortcutPlay(SingleActivator v) => _shortcutPlay.value = v;
+  SingleActivator get shortcutPrevious => _shortcutPrevious.value;
+  set shortcutPrevious(SingleActivator v) => _shortcutPrevious.value = v;
+  SingleActivator get shortcutNext => _shortcutNext.value;
+  set shortcutNext(SingleActivator v) => _shortcutNext.value = v;
+  SingleActivator get shortcutRewind => _shortcutRewind.value;
+  set shortcutRewind(SingleActivator v) => _shortcutRewind.value = v;
+  SingleActivator get shortcutForward => _shortcutForward.value;
+  set shortcutForward(SingleActivator v) => _shortcutForward.value = v;
+  SingleActivator get shortcutSpeedDown => _shortcutSpeedDown.value;
+  set shortcutSpeedDown(SingleActivator v) => _shortcutSpeedDown.value = v;
+  SingleActivator get shortcutSpeedUp => _shortcutSpeedUp.value;
+  set shortcutSpeedUp(SingleActivator v) => _shortcutSpeedUp.value = v;
+  SingleActivator get shortcutSpeedReset => _shortcutSpeedReset.value;
+  set shortcutSpeedReset(SingleActivator v) => _shortcutSpeedReset.value = v;
+  SingleActivator get shortcutVolumeDown => _shortcutVolumeDown.value;
+  set shortcutVolumeDown(SingleActivator v) => _shortcutVolumeDown.value = v;
+  SingleActivator get shortcutVolumeUp => _shortcutVolumeUp.value;
+  set shortcutVolumeUp(SingleActivator v) => _shortcutVolumeUp.value = v;
+  SingleActivator get shortcutMute => _shortcutMute.value;
+  set shortcutMute(SingleActivator v) => _shortcutMute.value = v;
+  SingleActivator get shortcutFullscreen => _shortcutFullscreen.value;
+  set shortcutFullscreen(SingleActivator v) => _shortcutFullscreen.value = v;
 
   static final videos = NnyyVideoCollection._();
 

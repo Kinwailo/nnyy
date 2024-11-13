@@ -104,52 +104,58 @@ class _VideoDetail extends HookWidget {
     final detail = controller.detail.value!;
     useListenable(controller.detail);
     useListenable(controller.ep);
-    return SingleChildScrollView(
-      child: Center(
-        child: SizedBox(
-          width: kIsWeb ? 1000 : null,
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(
-                width: 200,
-                child: Column(
-                  children: [
-                    _VideoCover(),
-                    _VideoInfo(),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const _VideoTitle(),
-                    ExcludeFocus(
-                        child: SelectionArea(child: Text(detail.intro))),
-                    const _VideoMeta(),
-                    if (kIsWeb) const _VideoEmbed(),
-                    Visibility(
-                      visible: controller.sites.isNotEmpty,
-                      maintainState: true,
-                      child: const Column(
-                        children: [
-                          _VideoState(),
-                          _VideoSiteList(),
-                        ],
-                      ),
+    return VideoWebShortcut(
+      child: Focus(
+        autofocus: true,
+        skipTraversal: true,
+        child: SingleChildScrollView(
+          child: Center(
+            child: SizedBox(
+              width: kIsWeb ? 1000 : null,
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(
+                    width: 200,
+                    child: Column(
+                      children: [
+                        _VideoCover(),
+                        _VideoInfo(),
+                      ],
                     ),
-                    const _VideoEpList(),
-                  ]
-                      .map((e) => Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          child: e))
-                      .toList(),
-                ),
-              )
-            ],
+                  ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const _VideoTitle(),
+                        ExcludeFocus(
+                            child: SelectionArea(child: Text(detail.intro))),
+                        const _VideoMeta(),
+                        if (kIsWeb) const _VideoEmbed(),
+                        Visibility(
+                          visible: controller.sites.isNotEmpty,
+                          maintainState: true,
+                          child: const Column(
+                            children: [
+                              _VideoState(),
+                              _VideoSiteList(),
+                            ],
+                          ),
+                        ),
+                        const _VideoEpList(),
+                      ]
+                          .map((e) => Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
+                              child: e))
+                          .toList(),
+                    ),
+                  )
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -166,34 +172,41 @@ class _VideoDetailV extends HookWidget {
     final detail = controller.detail.value!;
     useListenable(controller.detail);
     useListenable(controller.ep);
-    return ListView(
-      children: [
-        const _VideoTitle(),
-        const Row(
+    return VideoWebShortcut(
+      child: Focus(
+        autofocus: true,
+        skipTraversal: true,
+        child: ListView(
           children: [
-            SizedBox(width: 200, child: _VideoCover()),
-            Expanded(child: _VideoInfo()),
-          ],
+            const _VideoTitle(),
+            const Row(
+              children: [
+                SizedBox(width: 200, child: _VideoCover()),
+                Expanded(child: _VideoInfo()),
+              ],
+            ),
+            ExcludeFocus(child: SelectionArea(child: Text(detail.intro))),
+            const _VideoMeta(),
+            if (kIsWeb) const _VideoEmbed(),
+            Visibility(
+              visible: controller.sites.isNotEmpty,
+              maintainState: true,
+              child: const Column(
+                children: [
+                  _VideoState(),
+                  _VideoSiteList(),
+                ],
+              ),
+            ),
+            const _VideoEpList(),
+          ]
+              .map((e) => Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  child: e))
+              .toList(),
         ),
-        ExcludeFocus(child: SelectionArea(child: Text(detail.intro))),
-        const _VideoMeta(),
-        if (kIsWeb) const _VideoEmbed(),
-        Visibility(
-          visible: controller.sites.isNotEmpty,
-          maintainState: true,
-          child: const Column(
-            children: [
-              _VideoState(),
-              _VideoSiteList(),
-            ],
-          ),
-        ),
-        const _VideoEpList(),
-      ]
-          .map((e) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: e))
-          .toList(),
+      ),
     );
   }
 }
@@ -307,7 +320,7 @@ class _VideoEmbed extends HookWidget {
       canRequestFocus: false,
       child: const Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [VideoWeb(), VideoWebControl()]),
+          children: [VideoWeb(), VideoWebControl(), VideoWebSettings()]),
     );
   }
 }
@@ -319,8 +332,8 @@ class _VideoMeta extends HookWidget {
   Widget build(BuildContext context) {
     final controller = VideoController.i;
     final info = controller.detail.value!.info;
-    final video = NnyyData.videos[info.id];
-    useListenable(video);
+    final videoData = controller.videoData.value!;
+    useListenable(videoData);
     return NnyyFocusGroup(
       child: Wrap(
         alignment: WrapAlignment.center,
@@ -331,25 +344,25 @@ class _VideoMeta extends HookWidget {
           FocusTraversalOrder(
             order: const NumericFocusOrder(0),
             child: NnyyToggle(
-              value: video.fav,
+              value: videoData.fav,
               onChanged: (v) {
-                video.title = info.title;
-                video.fav = v;
-                video.datetime = DateTime.now();
-                if (!v) video.removeFav();
+                videoData.title = info.title;
+                videoData.fav = v;
+                videoData.datetime = DateTime.now();
+                if (!v) videoData.removeFav();
               },
               activeColor: Colors.redAccent,
               icon: Icons.favorite_border,
               activeIcon: Icons.favorite,
             ),
           ),
-          if (video.ep.isNotEmpty) ...[
+          if (videoData.ep.isNotEmpty) ...[
             const SizedBox(width: 8),
             FocusTraversalOrder(
               order: const NumericFocusOrder(1),
               child: NnyyButton(
-                onPressed: () => controller.play(video.ep),
-                child: Text('繼續播放${video.ep}'),
+                onPressed: () => controller.play(videoData.ep),
+                child: Text('繼續播放${videoData.ep}'),
               ),
             ),
             const SizedBox(width: 8),
@@ -358,11 +371,11 @@ class _VideoMeta extends HookWidget {
             order: const NumericFocusOrder(2),
             child: NnyyCheckbox(
               label: '自動播放下一集',
-              value: video.next,
+              value: videoData.next,
               onChanged: (v) {
-                video.title = info.title;
-                video.next = v;
-                video.datetime = DateTime.now();
+                videoData.title = info.title;
+                videoData.next = v;
+                videoData.datetime = DateTime.now();
               },
             ),
           ),
@@ -370,11 +383,11 @@ class _VideoMeta extends HookWidget {
             order: const NumericFocusOrder(3),
             child: NnyyDurationBox(
                 label: '跳過片頭',
-                value: Duration(seconds: video.skip),
+                value: Duration(seconds: videoData.skip),
                 onChanged: (v) {
-                  video.title = info.title;
-                  video.skip = v.inSeconds;
-                  video.datetime = DateTime.now();
+                  videoData.title = info.title;
+                  videoData.skip = v.inSeconds;
+                  videoData.datetime = DateTime.now();
                 }),
           ),
           const SizedBox(width: 8),
@@ -382,9 +395,9 @@ class _VideoMeta extends HookWidget {
             order: const NumericFocusOrder(4),
             child: NnyyButton(
               onPressed: () {
-                video.ep = '';
-                video.delete();
-                if (video.fav == false) {
+                videoData.ep = '';
+                videoData.delete();
+                if (videoData.fav == false) {
                   Navigator.of(context, rootNavigator: true).pop();
                 }
               },
@@ -473,7 +486,7 @@ class _VideoEpList extends HookWidget {
     const itemsPrePage = 100;
     final length = detail.eps.length;
     final pages = (length / itemsPrePage).ceil();
-    final videoData = NnyyData.videos[detail.info.id];
+    final videoData = controller.videoData.value!;
     final findPage = useCallback(() {
       final ep = detail.eps.keys.toList().indexOf(videoData.ep);
       return ep == -1
@@ -554,8 +567,7 @@ class _EpButton extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final controller = VideoController.i;
-    final detail = controller.detail.value!;
-    final progress = NnyyData.videos[detail.info.id].progress[ep];
+    final progress = controller.videoData.value!.progress[ep];
     final playVideo = useCallback(() {
       if (kIsWeb) {
         Scrollable.ensureVisible(

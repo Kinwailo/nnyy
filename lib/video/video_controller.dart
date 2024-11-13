@@ -26,6 +26,7 @@ class VideoController {
   static VideoController get i => _instance ??= VideoController._();
 
   final _detail = ValueNotifier<VideoDetail?>(null);
+  final _videoData = ValueNotifier<NnyyVideoData?>(null);
 
   final _ep = ValueNotifier('');
   final _site = ValueNotifier('');
@@ -45,6 +46,8 @@ class VideoController {
   final _error = ValueNotifier('');
 
   ValueListenable<VideoDetail?> get detail => _detail;
+  ValueListenable<NnyyVideoData?> get videoData => _videoData;
+
   ValueListenable<String> get ep => _ep;
   ValueListenable<String> get site => _site;
   ValueListenable<VideoPlayerController?> get video => _video;
@@ -78,6 +81,7 @@ class VideoController {
 
   Future<void> loadVideoDetail(VideoInfo info) async {
     _detail.value = null;
+    _videoData.value = null;
     _ep.value = '';
     _site.value = '';
     _state.value = VideoState.rest;
@@ -87,7 +91,8 @@ class VideoController {
       _error.value = e.toString();
       return;
     }
-    NnyyData.videos[info.id].title = info.title;
+    _videoData.value = NnyyData.videos[info.id];
+    videoData.value!.title = info.title;
   }
 
   void clearError() {
@@ -146,7 +151,7 @@ class VideoController {
     eps = eps.skipWhile((e) => e != ep.value);
     var next = eps.skip(offset.abs()).firstOrNull;
     if (next != null) {
-      if (!auto || NnyyData.videos[d.info.id].next) {
+      if (!auto || videoData.value!.next) {
         pause();
         play(next);
       }
@@ -250,31 +255,24 @@ class VideoController {
         break;
       case 'speed':
         var speed = double.tryParse(event[1]) ?? 1.0;
-        var d = detail.value;
-        if (d != null) NnyyData.videos[d.info.id].speed = speed;
+        videoData.value?.speed = speed;
         break;
       case 'volume':
         var volume = double.tryParse(event[1]) ?? 1.0;
-        var d = detail.value;
-        if (d != null) NnyyData.videos[d.info.id].volume = volume;
+        videoData.value?.volume = volume;
         break;
       case 'mute':
         var mute = bool.tryParse(event[1]) ?? false;
-        var d = detail.value;
-        if (d != null) NnyyData.videos[d.info.id].mute = mute;
+        videoData.value?.mute = mute;
         break;
       default:
     }
   }
 
   void _updateWebControl() {
-    var d = detail.value;
-    if (d != null) {
-      var video = NnyyData.videos[d.info.id];
-      webview?.callJsMethod('changeSpeed', [video.speed]);
-      webview?.callJsMethod('changeVolume', [video.volume]);
-      webview?.callJsMethod('muteVideo', [video.mute]);
-    }
+    webview?.callJsMethod('changeSpeed', [videoData.value?.speed ?? 1.00]);
+    webview?.callJsMethod('changeVolume', [videoData.value?.volume ?? 1.00]);
+    webview?.callJsMethod('muteVideo', [videoData.value?.mute ?? false]);
   }
 
   void _rewind(int repeat, bool last) {
@@ -345,10 +343,10 @@ class VideoController {
   Future<void> _startVideo() async {
     var d = detail.value;
     if (d != null) {
-      var progress = NnyyData.videos[d.info.id].progress[ep.value].data;
+      var progress = videoData.value!.progress[ep.value].data;
       var pos = progress.current;
       var len = video.value?.value.duration.inSeconds ?? 0;
-      var skip = NnyyData.videos[d.info.id].skip;
+      var skip = videoData.value!.skip;
       pos = max(pos, skip);
       if (pos < len) await _seekVideo(pos);
     }
@@ -362,9 +360,9 @@ class VideoController {
   void _startWebVideo() {
     var d = detail.value;
     if (d != null) {
-      var progress = NnyyData.videos[d.info.id].progress[ep.value].data;
+      var progress = videoData.value!.progress[ep.value].data;
       var pos = progress.current;
-      var skip = NnyyData.videos[d.info.id].skip;
+      var skip = videoData.value!.skip;
       pos = max(pos, skip);
       if (pos < _length.value) {
         _current.value = pos;
@@ -406,18 +404,12 @@ class VideoController {
     NnyyData.data.addSiteDuration(site.value, _counter ~/ 1000);
     _counter %= 1000;
     _stopwatch.reset();
-    var d = detail.value;
-    if (d != null) {
-      var cur = kIsWeb ? _current.value : video.value!.value.position.inSeconds;
-      var len = kIsWeb ? _length.value : video.value!.value.duration.inSeconds;
-      {
-        var video = NnyyData.videos[d.info.id];
-        video.progress[ep.value].data = VideoProgress(cur, cur, len);
-        video.title = d.info.title;
-        video.ep = ep.value;
-        video.datetime = DateTime.now();
-      }
-    }
+    var cur = kIsWeb ? _current.value : video.value!.value.position.inSeconds;
+    var len = kIsWeb ? _length.value : video.value!.value.duration.inSeconds;
+    videoData.value?.progress[ep.value].data = VideoProgress(cur, cur, len);
+    videoData.value?.title = detail.value?.info.title ?? '';
+    videoData.value?.ep = ep.value;
+    videoData.value?.datetime = DateTime.now();
   }
 }
 
