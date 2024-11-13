@@ -89,6 +89,10 @@ class NnyyData extends ChangeNotifier {
       name, 'shortcut.mute', const SingleActivator(LogicalKeyboardKey.keyM),
       onGet: (Map<String, dynamic> v) => v.toSingleActivator,
       onSet: (v) => v.toMap);
+  late final _shortcutSaveImage = StoreValueFrom(name, 'shortcut.save.image',
+      const SingleActivator(LogicalKeyboardKey.insert),
+      onGet: (Map<String, dynamic> v) => v.toSingleActivator,
+      onSet: (v) => v.toMap);
   late final _shortcutFullscreen = StoreValueFrom(name, 'shortcut.fullscreen',
       const SingleActivator(LogicalKeyboardKey.keyF),
       onGet: (Map<String, dynamic> v) => v.toSingleActivator,
@@ -141,6 +145,8 @@ class NnyyData extends ChangeNotifier {
   set shortcutVolumeUp(SingleActivator v) => _shortcutVolumeUp.value = v;
   SingleActivator get shortcutMute => _shortcutMute.value;
   set shortcutMute(SingleActivator v) => _shortcutMute.value = v;
+  SingleActivator get shortcutSaveImage => _shortcutSaveImage.value;
+  set shortcutSaveImage(SingleActivator v) => _shortcutSaveImage.value = v;
   SingleActivator get shortcutFullscreen => _shortcutFullscreen.value;
   set shortcutFullscreen(SingleActivator v) => _shortcutFullscreen.value = v;
 

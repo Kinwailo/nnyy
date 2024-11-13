@@ -111,7 +111,7 @@ class VideoWebControl extends HookWidget {
                 value: current,
                 value2: buffered,
                 onHover: !ready ? null : (x) => progressHint.value = x,
-                onTap: !ready ? null : action.seek,
+                onTap: action.seek,
               ),
             ),
           ),
@@ -120,26 +120,20 @@ class VideoWebControl extends HookWidget {
             children: [
               VideoWebButton(
                   controller.paused.value ? Icons.play_arrow : Icons.pause,
-                  onPressed: !ready ? null : action.play),
+                  onPressed: action.play),
               const SizedBox(width: 8),
-              VideoWebButton(Icons.skip_previous,
-                  onPressed: !ready ? null : action.previous),
-              VideoWebButton(Icons.fast_rewind,
-                  onPressed: !ready ? null : action.rewind),
-              VideoWebButton(Icons.fast_forward,
-                  onPressed: !ready ? null : action.forward),
-              VideoWebButton(Icons.skip_next,
-                  onPressed: !ready ? null : action.next),
+              VideoWebButton(Icons.skip_previous, onPressed: action.previous),
+              VideoWebButton(Icons.fast_rewind, onPressed: action.rewind),
+              VideoWebButton(Icons.fast_forward, onPressed: action.forward),
+              VideoWebButton(Icons.skip_next, onPressed: action.next),
               const SizedBox(width: 16),
               if (ready) const VideoWebPosition(),
               const Spacer(),
-              VideoWebButton(Icons.remove,
-                  onPressed: !ready ? null : action.speedDown),
+              VideoWebButton(Icons.remove, onPressed: action.speedDown),
               TextButton(
-                  onPressed: !ready ? null : action.speedReset,
+                  onPressed: action.speedReset,
                   child: Text('${videoData!.speed.toStringAsFixed(2)}x')),
-              VideoWebButton(Icons.add,
-                  onPressed: !ready ? null : action.speedUp),
+              VideoWebButton(Icons.add, onPressed: action.speedUp),
               const SizedBox(width: 16),
               SizedBox(
                 width: 60,
@@ -150,7 +144,7 @@ class VideoWebControl extends HookWidget {
                       height: 20,
                       value: videoData.volume,
                       onHover: !ready ? null : (x) => volumeHint.value = x,
-                      onTap: !ready ? null : action.changeVolume,
+                      onTap: action.changeVolume,
                     )),
               ),
               const SizedBox(width: 4),
@@ -162,12 +156,12 @@ class VideoWebControl extends HookWidget {
                         : '${videoData.volume * 10000 ~/ 100}%',
                 child: VideoWebButton(
                     videoData.mute ? Icons.volume_mute : Icons.volume_up,
-                    onPressed: !ready ? null : action.mute),
+                    onPressed: action.mute),
               ),
+              VideoWebButton(Icons.camera_alt, onPressed: action.saveImage),
               VideoWebButton(Icons.settings,
                   onPressed: controller.toggleSettings),
-              VideoWebButton(Icons.fullscreen,
-                  onPressed: !ready ? null : action.fullscreen),
+              VideoWebButton(Icons.fullscreen, onPressed: action.fullscreen),
             ],
           ),
         ],
@@ -234,6 +228,8 @@ class VideoWebAction {
       ? null
       : (v) => webview?.callJsMethod('changeVolume',
           [videoData!.volume = clampDouble((v * 100 ~/ 1) / 100, 0.0, 1.0)]);
+  VoidCallback? get saveImage =>
+      !ready ? null : () => webview?.callJsMethod('saveImage', []);
   VoidCallback? get fullscreen =>
       !ready ? null : () => webview?.callJsMethod('toggleFullscreen', []);
 }
@@ -265,6 +261,7 @@ class VideoWebShortcut extends HookWidget {
               NnyyData.data.shortcutVolumeDown: action.volumeDown!,
               NnyyData.data.shortcutVolumeUp: action.volumeUp!,
               NnyyData.data.shortcutMute: action.mute!,
+              NnyyData.data.shortcutSaveImage: action.saveImage!,
               NnyyData.data.shortcutFullscreen: action.fullscreen!,
             },
       child: child,
@@ -309,6 +306,8 @@ class VideoWebSettings extends HookWidget {
                 onChanged: (v) => NnyyData.data.shortcutVolumeUp = v),
             ShortcutChip('靜音', NnyyData.data.shortcutMute,
                 onChanged: (v) => NnyyData.data.shortcutMute = v),
+            ShortcutChip('儲存圖片', NnyyData.data.shortcutSaveImage,
+                onChanged: (v) => NnyyData.data.shortcutSaveImage = v),
             ShortcutChip('全螢幕', NnyyData.data.shortcutFullscreen,
                 onChanged: (v) => NnyyData.data.shortcutFullscreen = v),
           ],

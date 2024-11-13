@@ -377,6 +377,7 @@ class VideoController {
         _current.value = pos;
         webview?.callJsMethod('seekVideo', ['$pos']);
       }
+      webview?.callJsMethod('setFilename', ['${d.info.title}-${ep.value}']);
     }
     _state.value = VideoState.ready;
   }

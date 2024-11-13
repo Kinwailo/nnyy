@@ -191,6 +191,9 @@
                 <button id="fullscreen" class="right" style="display:none">
                     <i class="material-icons">fullscreen_exit</i>
                 </button>
+                <button id="save_image" class="right">
+                    <i class="material-icons">camera_alt</i>
+                </button>
                 <button id="mute" class="tooltip right">
                     <div class="tooltiptext"></div>
                     <i class="material-icons">volume_up</i>
@@ -233,6 +236,7 @@
             if (data.fatal) { dartCallback("error"); }
         });
 
+        var filename = "image";
         var time = 0;
         var length = 0;
         video.controls = false;
@@ -279,6 +283,7 @@
         setupButtonEvent("speed_up", (e) => changeSpeed(video.playbackRate + 0.25));
         setupButtonEvent("mute", (e) => muteVideo(!video.muted));
         setupButtonEvent("unmute", (e) => muteVideo(!video.muted));
+        setupButtonEvent("save_image", (e) => saveImage());
         setupButtonEvent("fullscreen", (e) => toggleFullscreen());
         setupButtonEvent("fullscreen_exit", (e) => toggleFullscreen());
 
@@ -414,6 +419,22 @@
             var fullscreen = !!document.fullscreenElement;
             fullscreen ? document.exitFullscreen() : container.requestFullscreen();
             container.setAttribute("data-fullscreen", !fullscreen);
+        }
+
+        function setFilename(name) {
+            filename = name;
+        }
+
+        function saveImage() {
+            var canvas = document.createElement("canvas");
+            var context = canvas.getContext("2d");
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            var a = document.createElement("a");
+            a.href = canvas.toDataURL();
+            a.download = `${filename}-${timeString(time)}.png`;
+            a.click();
         }
     </script>
 </body>
