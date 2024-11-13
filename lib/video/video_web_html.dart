@@ -326,6 +326,7 @@ const String html = r"""<!DOCTYPE html>
             document.getElementById("controls").style.display = fullscreen ? "block" : "none";
             document.getElementById("fullscreen_exit").style.display = !fullscreen ? "block" : "none";
             document.getElementById("fullscreen").style.display = fullscreen ? "block" : "none";
+            updateMute();
             dartCallback("fullscreen:" + fullscreen.toString());
         };
 
@@ -354,15 +355,19 @@ const String html = r"""<!DOCTYPE html>
             updateTime(Math.floor(seek));
         }
 
-        function updateVolume() {
-            var progress = document.getElementById("volume").getElementsByClassName("value")[0];
-            progress.style.width = `${video.volume * 100}%`;
+        function updateMute() {
             var tooltip = document.getElementById("mute").getElementsByClassName("tooltiptext")[0];
             tooltip.textContent = `${Math.trunc(video.volume * 100)}%`;
             var width = parseFloat(getComputedStyle(tooltip).getPropertyValue("width"));
             width += 8;
             tooltip.style.left = "50%";
             tooltip.style.marginLeft = `-${width / 2}px`;
+        }
+
+        function updateVolume() {
+            var progress = document.getElementById("volume").getElementsByClassName("value")[0];
+            progress.style.width = `${video.volume * 100}%`;
+            updateMute();
         }
 
         function updateBuffered(buffered) {
