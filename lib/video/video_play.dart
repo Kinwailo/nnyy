@@ -122,7 +122,8 @@ class _VideoTitle extends HookWidget {
       child: Row(
         children: [
           ExcludeFocus(
-            child: BackButton(onPressed: controller.toggleFullScreen),
+            child: IconButton(
+                icon: const BackButtonIcon(), onPressed: controller.stop),
           ),
           Text(
             '${detail!.info.title} $ep',
