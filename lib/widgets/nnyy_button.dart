@@ -34,7 +34,7 @@ class NnyyButton extends HookWidget {
     final state = useMemoized(
         () => WidgetStatesController(selected ? {WidgetState.selected} : {}));
     final callback = useCallback(() {
-      if (selectable) checked.value = !checked.value;
+      // if (selectable) checked.value = !checked.value;
       onPressed?.call();
       onChanged?.call(checked.value);
     });
