@@ -155,13 +155,13 @@ class VideoController {
       _enterFullScreen();
     } else {
       _disposeVideo();
+      _ep.value = ep_;
       _state.value = VideoState.loading;
       sites = await VideoService.i.getVideoSite(d.info, d.eps[ep_]!);
       sites = NnyyData.data.sortSiteMap(sites);
       _site.value =
           sites.containsKey(_ssite.value) ? _ssite.value : sites.keys.first;
       if (_ssite.value.isEmpty) _ssite.value = site.value;
-      _ep.value = ep_;
       _enterFullScreen();
       _loadVideo(sites[site.value]!);
     }
@@ -349,6 +349,7 @@ class VideoController {
 
   void _loadVideo(String url) {
     if (kIsWeb) {
+      _state.value = VideoState.loading;
       webview?.callJsMethod('loadVideo', [url]);
       return;
     }

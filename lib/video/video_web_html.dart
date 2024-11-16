@@ -156,12 +156,40 @@ const String html = r"""<!DOCTYPE html>
             color: #000;
             background-color: #f8e80a;
         }
+
+        #loading {
+            visibility: hidden;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            margin: -24px 0 0 -24px;
+            z-index: 1;
+            width: 48px;
+            height: 48px;
+            border: 5px solid #FFF;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
 
 <body>
     <div id="container" oncontextmenu="return false;">
         <video id="video" controls preload></video>
+        <span id="loading"></span>
         <div id="controls">
             <div class="button-bar">
                 <button id="play">
@@ -244,6 +272,8 @@ const String html = r"""<!DOCTYPE html>
         video.onplay = (e) => dartCallback("play");
         video.onpause = (e) => dartCallback("pause");
         video.onended = (e) => dartCallback("ended");
+        video.onwaiting = (e) => document.getElementById("loading").style.visibility = "visible";
+        video.onplaying = (e) => document.getElementById("loading").style.visibility = "hidden";
         video.onvolumechange = (e) => {
             updateVolume();
             dartCallback("volume:" + video.volume.toString());
@@ -256,6 +286,7 @@ const String html = r"""<!DOCTYPE html>
             updateTime(Math.floor(video.currentTime));
         };
         video.onloadedmetadata = (e) => {
+            document.getElementById("loading").style.visibility = "hidden";
             length = Math.floor(video.duration);
             updateTime(Math.floor(video.currentTime));
             updateVolume();
@@ -341,6 +372,7 @@ const String html = r"""<!DOCTYPE html>
         function changeSpeed(speed) { video.playbackRate = Math.min(Math.max(speed, 0.25), 3.00); }
 
         function loadVideo(src) {
+            document.getElementById("loading").style.visibility = "visible";
             src = decodeURIComponent(src);
             time = 0;
             length = 0;
