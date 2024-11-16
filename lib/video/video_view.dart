@@ -102,9 +102,8 @@ class _VideoDetail extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final controller = VideoController.i;
-    useListenable(controller.ep);
     final detail = useValueListenable(controller.detail)!;
-
+    useListenable(controller.sites);
     return NnyyFocusGroup(
       child: VideoWebShortcut(
         child: Focus(
@@ -137,7 +136,7 @@ class _VideoDetail extends HookWidget {
                           const _VideoMeta(),
                           if (kIsWeb) const _VideoEmbed(),
                           Visibility(
-                            visible: controller.sites.isNotEmpty,
+                            visible: controller.sites.value.isNotEmpty,
                             maintainState: true,
                             child: const Column(
                               children: [
@@ -172,9 +171,8 @@ class _VideoDetailV extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final controller = VideoController.i;
-    final detail = controller.detail.value!;
-    useListenable(controller.detail);
-    useListenable(controller.ep);
+    final detail = useValueListenable(controller.detail)!;
+    useListenable(controller.sites);
     return VideoWebShortcut(
       child: Focus(
         autofocus: true,
@@ -192,7 +190,7 @@ class _VideoDetailV extends HookWidget {
             const _VideoMeta(),
             if (kIsWeb) const _VideoEmbed(),
             Visibility(
-              visible: controller.sites.isNotEmpty,
+              visible: controller.sites.value.isNotEmpty,
               maintainState: true,
               child: const Column(
                 children: [
@@ -457,11 +455,11 @@ class _VideoSiteList extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final controller = VideoController.i;
-    final sites = controller.sites.keys;
+    final sites = controller.sites.value.keys;
     var selected = controller.site.value;
     if (!sites.contains(selected)) selected = sites.firstOrNull ?? '';
-    useListenable(controller.ep);
     useListenable(controller.site);
+    useListenable(controller.sites);
     return NnyyFocusGroup(
       child: Center(
         child: SingleChildScrollView(

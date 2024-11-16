@@ -31,7 +31,7 @@ class VideoController {
 
   final _ep = ValueNotifier('');
   final _site = ValueNotifier('');
-  final _ssite = ValueNotifier('');
+  final _sites = ValueNotifier(<String, String>{});
   final _video = ValueNotifier<VideoPlayerController?>(null);
 
   final _fullscreen = ValueNotifier(false);
@@ -52,6 +52,7 @@ class VideoController {
 
   ValueListenable<String> get ep => _ep;
   ValueListenable<String> get site => _site;
+  ValueListenable<Map<String, String>> get sites => _sites;
   ValueListenable<VideoPlayerController?> get video => _video;
   ValueListenable<bool> get fullscreen => _fullscreen;
   ValueListenable<bool> get controls => _controls;
@@ -74,7 +75,6 @@ class VideoController {
   final focusPlayer = FocusNode();
   final focusWebPlayer = FocusNode();
 
-  var sites = <String, String>{};
   WebViewXController? webview;
   final webActions = VideoWebAction();
   Map<SingleActivator, VoidCallback> get webShortcutActions =>
@@ -96,6 +96,7 @@ class VideoController {
 
   var _url = '';
   int _counter = 0;
+  var _lastSite = '';
   var _controlsTick = DateTime.now();
   final _stopwatch = Stopwatch();
 
@@ -157,13 +158,14 @@ class VideoController {
       _disposeVideo();
       _ep.value = ep_;
       _state.value = VideoState.loading;
-      sites = await VideoService.i.getVideoSite(d.info, d.eps[ep_]!);
-      sites = NnyyData.data.sortSiteMap(sites);
-      _site.value =
-          sites.containsKey(_ssite.value) ? _ssite.value : sites.keys.first;
-      if (_ssite.value.isEmpty) _ssite.value = site.value;
+      var sites_ = await VideoService.i.getVideoSite(d.info, d.eps[ep_]!);
+      _sites.value = NnyyData.data.sortSiteMap(sites_);
+      _site.value = sites.value.containsKey(_lastSite)
+          ? _lastSite
+          : sites.value.keys.first;
+      if (_lastSite.isEmpty) _lastSite = site.value;
       _enterFullScreen();
-      _loadVideo(sites[site.value]!);
+      _loadVideo(sites.value[site.value]!);
     }
   }
 
@@ -183,16 +185,16 @@ class VideoController {
   }
 
   void setSite(String site_) {
-    if (!sites.containsKey(site_)) return;
+    if (!sites.value.containsKey(site_)) return;
     if (site_ == site.value) {
       _playVideo();
       _enterFullScreen();
     } else {
       _disposeVideo();
       _site.value = site_;
-      _ssite.value = site_;
+      _lastSite = site_;
       _enterFullScreen();
-      _loadVideo(sites[site_]!);
+      _loadVideo(sites.value[site_]!);
     }
   }
 
@@ -342,7 +344,7 @@ class VideoController {
   void dispose() {
     if (!paused.value) _updateHistory();
     _disposeVideo();
-    sites = {};
+    _sites.value = {};
     _ep.value = '';
     _exitFullScreen();
   }
