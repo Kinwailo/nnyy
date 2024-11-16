@@ -2,13 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
+extension FocusNodeAction on FocusNode {
+  bool upFocus() {
+    var result = focusInDirection(TraversalDirection.up);
+    if (!result) result = previousFocus();
+    return result;
+  }
+
+  bool downFocus() {
+    var result = focusInDirection(TraversalDirection.down);
+    if (!result) result = nextFocus();
+    return result;
+  }
+}
+
 class NnyyFocusGroupAction extends Action<DirectionalFocusIntent> {
   @override
   bool invoke(DirectionalFocusIntent intent) {
     return switch (intent.direction) {
-      TraversalDirection.up ||
-      TraversalDirection.down =>
-        primaryFocus!.focusInDirection(intent.direction),
+      TraversalDirection.up => primaryFocus!.upFocus(),
+      TraversalDirection.down => primaryFocus!.downFocus(),
       TraversalDirection.left => primaryFocus!.previousFocus(),
       TraversalDirection.right => primaryFocus!.nextFocus(),
     };

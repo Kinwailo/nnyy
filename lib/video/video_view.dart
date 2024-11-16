@@ -105,56 +105,58 @@ class _VideoDetail extends HookWidget {
     useListenable(controller.ep);
     final detail = useValueListenable(controller.detail)!;
 
-    return VideoWebShortcut(
-      child: Focus(
-        autofocus: true,
-        skipTraversal: true,
-        child: SingleChildScrollView(
-          child: Center(
-            child: SizedBox(
-              width: kIsWeb ? 1000 : null,
-              child: Row(
-                mainAxisSize: MainAxisSize.max,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(
-                    width: 200,
-                    child: Column(
-                      children: [
-                        _VideoCover(),
-                        _VideoInfo(),
-                      ],
+    return NnyyFocusGroup(
+      child: VideoWebShortcut(
+        child: Focus(
+          autofocus: true,
+          skipTraversal: true,
+          child: SingleChildScrollView(
+            child: Center(
+              child: SizedBox(
+                width: kIsWeb ? 1000 : null,
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(
+                      width: 200,
+                      child: Column(
+                        children: [
+                          _VideoCover(),
+                          _VideoInfo(),
+                        ],
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const _VideoTitle(),
-                        ExcludeFocus(
-                            child: SelectionArea(child: Text(detail.intro))),
-                        const _VideoMeta(),
-                        if (kIsWeb) const _VideoEmbed(),
-                        Visibility(
-                          visible: controller.sites.isNotEmpty,
-                          maintainState: true,
-                          child: const Column(
-                            children: [
-                              _VideoState(),
-                              _VideoSiteList(),
-                            ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const _VideoTitle(),
+                          ExcludeFocus(
+                              child: SelectionArea(child: Text(detail.intro))),
+                          const _VideoMeta(),
+                          if (kIsWeb) const _VideoEmbed(),
+                          Visibility(
+                            visible: controller.sites.isNotEmpty,
+                            maintainState: true,
+                            child: const Column(
+                              children: [
+                                _VideoState(),
+                                _VideoSiteList(),
+                              ],
+                            ),
                           ),
-                        ),
-                        const _VideoEpList(),
-                      ]
-                          .map((e) => Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
-                              child: e))
-                          .toList(),
-                    ),
-                  )
-                ],
+                          const _VideoEpList(),
+                        ]
+                            .map((e) => Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                child: e))
+                            .toList(),
+                      ),
+                    )
+                  ],
+                ),
               ),
             ),
           ),
