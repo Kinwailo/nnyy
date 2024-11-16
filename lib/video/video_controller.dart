@@ -479,6 +479,8 @@ class VideoWebAction {
   bool get ready => controller.state.value == VideoState.ready;
   NnyyVideoData? get videoData => controller.videoData.value;
 
+  double _lastSpeed = 1.0;
+
   VoidCallback? get play => !ready ? null : _play;
   ValueSetter<double>? get seek => !ready ? null : _seek;
   VoidCallback? get rewind => !ready ? null : _rewind;
@@ -506,9 +508,16 @@ class VideoWebAction {
 
   void _speedDown() => _changeSpeed(videoData!.speed - 0.25);
   void _speedUp() => _changeSpeed(videoData!.speed + 0.25);
-  void _speedReset() => _changeSpeed(1.00);
   void _changeSpeed(double s) => webview?.callJsMethod(
       'changeSpeed', [videoData!.speed = clampDouble(s, 0.25, 3.0)]);
+  void _speedReset() {
+    if (videoData!.speed == 1.0) {
+      _changeSpeed(_lastSpeed);
+    } else {
+      _lastSpeed = videoData!.speed.toDouble();
+      _changeSpeed(1.0);
+    }
+  }
 
   void _volumeDown() => _changeVolume((videoData!.volume ~/ 0.01 - 5) / 100);
   void _volumeUp() => _changeVolume((videoData!.volume ~/ 0.01 + 5) / 100);

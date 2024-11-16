@@ -267,6 +267,7 @@ const String html = r"""<!DOCTYPE html>
         var filename = "image";
         var time = 0;
         var length = 0;
+        var lastSpeed = 1.0;
         video.controls = false;
 
         video.onplay = (e) => dartCallback("play");
@@ -310,7 +311,7 @@ const String html = r"""<!DOCTYPE html>
         setupButtonEvent("rewind", (e) => offsetVideo(-2));
         setupButtonEvent("forward", (e) => offsetVideo(2));
         setupButtonEvent("speed_down", (e) => changeSpeed(video.playbackRate - 0.25));
-        setupButtonEvent("speed", (e) => changeSpeed(1.0));
+        setupButtonEvent("speed", (e) => resetSpeed());
         setupButtonEvent("speed_up", (e) => changeSpeed(video.playbackRate + 0.25));
         setupButtonEvent("mute", (e) => muteVideo(!video.muted));
         setupButtonEvent("unmute", (e) => muteVideo(!video.muted));
@@ -368,7 +369,7 @@ const String html = r"""<!DOCTYPE html>
         };
 
         function offsetVideo(offset) { video.currentTime += offset; }
-        function changeVolume(volume) { video.volume = volume; }
+        function changeVolume(volume) { video.volume = Math.min(Math.max(volume, 0.0), 1.00); }
         function changeSpeed(speed) { video.playbackRate = Math.min(Math.max(speed, 0.25), 3.00); }
 
         function loadVideo(src) {
@@ -420,6 +421,16 @@ const String html = r"""<!DOCTYPE html>
                 var progress = document.getElementById("progress").getElementsByClassName("value")[0];
                 progress.style.width = `${time * 100 / length}%`;
                 dartCallback("current:" + time.toString());
+            }
+        }
+
+        function resetSpeed() {
+            if (video.playbackRate == 1.0) {
+                video.playbackRate = lastSpeed;
+            }
+            else {
+                lastSpeed = video.playbackRate;
+                video.playbackRate = 1.0;
             }
         }
 
