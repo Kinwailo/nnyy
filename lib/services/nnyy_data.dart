@@ -270,8 +270,8 @@ class NnyyVideoData extends ChangeNotifier {
   late final _skip = StoreValue('$id$name', 'skip', 0, cloud: cloud);
   late final _reverse = StoreValue('$id$name', 'reverse', false, cloud: cloud);
 
-  late final _speed = StoreValue('$id$name', 'speed', 1.0, cloud: cloud);
-  late final _volume = StoreValue('$id$name', 'volume', 1.0, cloud: cloud);
+  late final _speed = StoreValue<num>('$id$name', 'speed', 1.0, cloud: cloud);
+  late final _volume = StoreValue<num>('$id$name', 'volume', 1.0, cloud: cloud);
   late final _mute = StoreValue('$id$name', 'mute', false, cloud: cloud);
 
   late final _datetime = StoreValueFrom('$id$name', 'datetime', DateTime(2000),
@@ -292,10 +292,10 @@ class NnyyVideoData extends ChangeNotifier {
   bool get reverse => _reverse.value;
   set reverse(bool v) => _reverse.value = v;
 
-  double get speed => _speed.value;
-  set speed(double v) => _speed.value = v;
-  double get volume => _volume.value;
-  set volume(double v) => _volume.value = v;
+  num get speed => _speed.value;
+  set speed(num v) => _speed.value = v;
+  num get volume => _volume.value;
+  set volume(num v) => _volume.value = v;
   bool get mute => _mute.value;
   set mute(bool v) => _mute.value = v;
 

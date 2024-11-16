@@ -140,7 +140,7 @@ class VideoWebControl extends HookWidget {
                         !ready ? '' : '${volumeHint.value * 10000 ~/ 100}%',
                     child: VideoWebProgress(
                       height: 20,
-                      value: videoData.volume,
+                      value: videoData.volume.toDouble(),
                       onHover: !ready ? null : (x) => volumeHint.value = x,
                       onTap: actions.changeVolume,
                     )),
