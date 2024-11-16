@@ -33,8 +33,8 @@ class VideoController {
   final _ssite = ValueNotifier('');
   final _video = ValueNotifier<VideoPlayerController?>(null);
 
-  final _player = ValueNotifier(false);
-  final _ui = ValueNotifier(false);
+  final _fullscreen = ValueNotifier(false);
+  final _controls = ValueNotifier(false);
   final _lock = ValueNotifier(false);
   final _state = ValueNotifier<VideoState>(VideoState.rest);
   final _paused = ValueNotifier(true);
@@ -52,8 +52,8 @@ class VideoController {
   ValueListenable<String> get ep => _ep;
   ValueListenable<String> get site => _site;
   ValueListenable<VideoPlayerController?> get video => _video;
-  ValueListenable<bool> get player => _player;
-  ValueListenable<bool> get ui => _ui;
+  ValueListenable<bool> get fullscreen => _fullscreen;
+  ValueListenable<bool> get controls => _controls;
   ValueListenable<bool> get lock => _lock;
   ValueListenable<VideoState> get state => _state;
   ValueListenable<bool> get paused => _paused;
@@ -64,9 +64,9 @@ class VideoController {
   ValueListenable<String> get error => _error;
   ValueListenable<bool> get settings => _settings;
 
-  late final tapAction = RepeatAction(_tapUI);
-  late final rewindAction = RepeatAction(_rewind);
-  late final forwardAction = RepeatAction(_forward);
+  late final tapAction = RepeatAction(_tapAction);
+  late final rewindAction = RepeatAction(_rewindAction);
+  late final forwardAction = RepeatAction(_forwardAction);
 
   FocusNode? focusNow;
   FocusNode? focusView;
@@ -79,7 +79,7 @@ class VideoController {
   var _url = '';
   int _counter = 0;
   final _stopwatch = Stopwatch();
-  var _uiStart = DateTime.now();
+  var _controlsTick = DateTime.now();
 
   Future<void> loadVideoDetail(VideoInfo info) async {
     _detail.value = null;
@@ -112,7 +112,7 @@ class VideoController {
     if (unsupported) return;
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
     WakelockPlus.enable();
-    _player.value = true;
+    _fullscreen.value = true;
     focusView = focusNow;
     focusPlayer.requestFocus();
   }
@@ -121,16 +121,12 @@ class VideoController {
     if (unsupported) return;
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     WakelockPlus.disable();
-    _player.value = false;
+    _fullscreen.value = false;
     focusView?.requestFocus();
   }
 
-  void exitVideoUI() {
-    _ui.value = false;
-  }
-
-  void exitVideoPlayer() {
-    _player.value = false;
+  void toggleFullScreen() {
+    _fullscreen.value = !_fullscreen.value;
   }
 
   Future<void> play(String ep_) async {
@@ -182,31 +178,35 @@ class VideoController {
     }
   }
 
-  void _tapUI(int repeat, bool last) {
+  void _tapAction(int repeat, bool last) {
     if (repeat == 1 && last) {
-      if (ui.value || paused.value) {
+      if (controls.value || paused.value) {
         toggle();
-        showUI(ui.value);
+        showControls(controls.value);
       } else {
-        showUI(true);
+        showControls(true);
       }
     }
     if (repeat == 2 && last) {
       _lock.value = !lock.value;
-      showUI(true);
+      showControls(true);
     }
   }
 
-  Future<void> showUI(bool show) async {
-    _ui.value = show;
-    _uiStart = DateTime.now();
-    var start = _uiStart;
+  Future<void> showControls(bool show) async {
+    _controls.value = show;
+    _controlsTick = DateTime.now();
+    var tick = _controlsTick;
     await Future.delayed(Durations.extralong4 * 5);
-    if (start != _uiStart) return;
+    if (tick != _controlsTick) return;
     if (paused.value) return;
     _enterFullScreen();
     if (lock.value) return;
-    _ui.value = false;
+    _controls.value = false;
+  }
+
+  void hideControls() {
+    _controls.value = false;
   }
 
   void toggle() {
@@ -284,11 +284,11 @@ class VideoController {
     webview?.callJsMethod('muteVideo', [videoData.value?.mute ?? false]);
   }
 
-  void _rewind(int repeat, bool last) {
+  void _rewindAction(int repeat, bool last) {
     _seekTo(-1, repeat, last);
   }
 
-  void _forward(int repeat, bool last) {
+  void _forwardAction(int repeat, bool last) {
     _seekTo(1, repeat, last);
   }
 
@@ -299,7 +299,7 @@ class VideoController {
       var k = s.keys.skipWhile((e) => repeat >= e).firstOrNull ?? 0;
       var v = s[k] ?? 30;
       _seek.value += offset * v;
-      showUI(true);
+      showControls(true);
     } else {
       var cur = video.value!.value.position.inSeconds;
       var len = video.value!.value.duration.inSeconds;
@@ -307,7 +307,7 @@ class VideoController {
       cur = cur.clamp(0, len);
       _seek.value = 0;
       _seekVideo(cur);
-      showUI(true);
+      showControls(true);
     }
   }
 
@@ -362,7 +362,7 @@ class VideoController {
     _state.value = VideoState.ready;
     if (!paused.value) {
       _playVideo();
-      showUI(true);
+      showControls(true);
     }
   }
 
@@ -387,7 +387,7 @@ class VideoController {
     _paused.value = false;
     _stopwatch.start();
     video.value?.play();
-    showUI(ui.value);
+    showControls(controls.value);
   }
 
   Future<void> _seekVideo(int pos) async {

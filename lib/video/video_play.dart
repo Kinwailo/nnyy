@@ -24,7 +24,7 @@ class VideoPlay extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final controller = VideoController.i;
-    useListenable(controller.player);
+    useListenable(controller.fullscreen);
     useListenable(controller.state);
     final action =
         CallbackAction(onInvoke: (_) => controller.tapAction.invoke());
@@ -38,7 +38,7 @@ class VideoPlay extends HookWidget {
     });
     return FocusableActionDetector(
       focusNode: controller.focusPlayer,
-      enabled: controller.player.value,
+      enabled: controller.fullscreen.value,
       actions: {
         ActivateIntent: action,
         ButtonActivateIntent: action,
@@ -47,20 +47,20 @@ class VideoPlay extends HookWidget {
       child: Center(
         child: controller.state.value != VideoState.ready
             ? const CircularProgressIndicator()
-            : const _VideoPlayUI(),
+            : const _VideoControls(),
       ),
     );
   }
 }
 
-class _VideoPlayUI extends HookWidget {
-  const _VideoPlayUI();
+class _VideoControls extends HookWidget {
+  const _VideoControls();
 
   @override
   Widget build(BuildContext context) {
     final controller = VideoController.i;
     final video = controller.video.value;
-    useListenable(controller.ui);
+    useListenable(controller.controls);
     return GestureDetector(
       onTap: controller.tapAction.invoke,
       onVerticalDragEnd: (details) {
@@ -85,7 +85,7 @@ class _VideoPlayUI extends HookWidget {
                   child: VideoPlayer(video),
                 ),
                 const _VideoBuffering(),
-                if (controller.ui.value) ...[
+                if (controller.controls.value) ...[
                   Align(
                     alignment: Alignment.bottomCenter,
                     child: Padding(
@@ -122,7 +122,7 @@ class _VideoTitle extends HookWidget {
       child: Row(
         children: [
           ExcludeFocus(
-            child: BackButton(onPressed: controller.exitVideoPlayer),
+            child: BackButton(onPressed: controller.toggleFullScreen),
           ),
           Text(
             '${detail!.info.title} $ep',

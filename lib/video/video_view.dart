@@ -14,6 +14,7 @@ import '../widgets/nnyy_duration_box.dart';
 import '../widgets/nnyy_select_button.dart';
 import '../widgets/nnyy_toggle.dart';
 import '../widgets/nnyy_focus.dart';
+import '../main.dart';
 import 'video_controller.dart';
 import 'video_play.dart';
 import 'video_web.dart';
@@ -45,18 +46,18 @@ class VideoView extends HookWidget {
       });
     });
     useListenable(controller.detail);
-    useListenable(controller.player);
+    useListenable(controller.fullscreen);
     useListenable(controller.error);
     return PopScope(
-      canPop: !controller.player.value,
+      canPop: !controller.fullscreen.value,
       onPopInvoked: (didPop) async {
         if (didPop) {
           controller.dispose();
           NnyyData.saveAll();
           return;
         }
-        if (controller.ui.value) {
-          controller.exitVideoUI();
+        if (controller.controls.value) {
+          controller.hideControls();
         } else {
           controller.stop();
           NnyyData.saveAll();
@@ -77,7 +78,7 @@ class VideoView extends HookWidget {
               ),
             ),
             child: IndexedStack(
-              index: controller.player.value ? 1 : 0,
+              index: controller.fullscreen.value && !kIsWeb ? 1 : 0,
               children: [
                 controller.detail.value == null
                     ? const Center(child: CircularProgressIndicator())
@@ -85,7 +86,7 @@ class VideoView extends HookWidget {
                             Orientation.landscape
                         ? const _VideoDetail()
                         : const _VideoDetailV(),
-                const VideoPlay(),
+                unsupported ? const SizedBox.shrink() : const VideoPlay(),
               ],
             ),
           ),
@@ -101,9 +102,9 @@ class _VideoDetail extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final controller = VideoController.i;
-    final detail = controller.detail.value!;
-    useListenable(controller.detail);
     useListenable(controller.ep);
+    final detail = useValueListenable(controller.detail)!;
+
     return VideoWebShortcut(
       child: Focus(
         autofocus: true,
@@ -315,14 +316,15 @@ class _VideoEmbed extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    useListenable(VideoController.i.settings);
+    final controller = VideoController.i;
+    final settings = useValueListenable(controller.settings);
     return Focus(
-      focusNode: VideoController.i.focusWebPlayer,
+      focusNode: controller.focusWebPlayer,
       canRequestFocus: false,
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         const VideoWeb(),
         const VideoWebControl(),
-        if (VideoController.i.settings.value) const VideoWebSettings(),
+        if (settings) const VideoWebSettings(),
       ]),
     );
   }
