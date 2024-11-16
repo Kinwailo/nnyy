@@ -11,6 +11,7 @@ import 'package:webviewx_plus/webviewx_plus.dart';
 import '../main.dart';
 import '../services/nnyy_data.dart';
 import '../services/video_service.dart';
+import 'video_web_key.dart';
 
 enum VideoState { rest, loading, ready, error }
 
@@ -75,11 +76,28 @@ class VideoController {
 
   var sites = <String, String>{};
   WebViewXController? webview;
+  final webActions = VideoWebAction();
+  Map<SingleActivator, VoidCallback> get webShortcutActions =>
+      Map.unmodifiable({
+        NnyyData.data.shortcutPlay: webActions.play!,
+        NnyyData.data.shortcutPrevious: webActions.previous!,
+        NnyyData.data.shortcutNext: webActions.next!,
+        NnyyData.data.shortcutRewind: webActions.rewind!,
+        NnyyData.data.shortcutForward: webActions.forward!,
+        NnyyData.data.shortcutSpeedDown: webActions.speedDown!,
+        NnyyData.data.shortcutSpeedUp: webActions.speedUp!,
+        NnyyData.data.shortcutSpeedReset: webActions.speedReset!,
+        NnyyData.data.shortcutVolumeDown: webActions.volumeDown!,
+        NnyyData.data.shortcutVolumeUp: webActions.volumeUp!,
+        NnyyData.data.shortcutMute: webActions.mute!,
+        NnyyData.data.shortcutSaveImage: webActions.saveImage!,
+        NnyyData.data.shortcutFullscreen: webActions.fullscreen!,
+      });
 
   var _url = '';
   int _counter = 0;
-  final _stopwatch = Stopwatch();
   var _controlsTick = DateTime.now();
+  final _stopwatch = Stopwatch();
 
   Future<void> loadVideoDetail(VideoInfo info) async {
     _detail.value = null;
@@ -232,6 +250,16 @@ class VideoController {
   void webviewEvent(String msg) {
     var event = msg.split(':');
     switch (event[0]) {
+      case 'key':
+        var key = event[1].split(',');
+        for (var e in webShortcutActions.entries) {
+          if (webKeyMap[key[0]] != e.key.trigger) continue;
+          if (bool.tryParse(key[1]) != e.key.control) continue;
+          if (bool.tryParse(key[2]) != e.key.shift) continue;
+          if (bool.tryParse(key[3]) != e.key.alt) continue;
+          e.value.call();
+        }
+        break;
       case 'play':
         _paused.value = false;
         _stopwatch.start();
@@ -440,4 +468,52 @@ class RepeatAction {
       _action?.call(repeat, true);
     }
   }
+}
+
+class VideoWebAction {
+  VideoController get controller => VideoController.i;
+  WebViewXController? get webview => controller.webview;
+  bool get ready => controller.state.value == VideoState.ready;
+  NnyyVideoData? get videoData => controller.videoData.value;
+
+  VoidCallback? get play => !ready ? null : _play;
+  ValueSetter<double>? get seek => !ready ? null : _seek;
+  VoidCallback? get rewind => !ready ? null : _rewind;
+  VoidCallback? get forward => !ready ? null : _forward;
+  VoidCallback? get previous => !ready ? null : _previous;
+  VoidCallback? get next => !ready ? null : _next;
+  VoidCallback? get speedDown => !ready ? null : _speedDown;
+  VoidCallback? get speedUp => !ready ? null : _speedUp;
+  VoidCallback? get speedReset => !ready ? null : _speedReset;
+  ValueSetter<double>? get changeSpeed => !ready ? null : _changeSpeed;
+  VoidCallback? get volumeDown => !ready ? null : _volumeDown;
+  VoidCallback? get volumeUp => !ready ? null : _volumeUp;
+  VoidCallback? get mute => !ready ? null : _mute;
+  ValueSetter<double>? get changeVolume => !ready ? null : _changeVolume;
+  VoidCallback? get saveImage => !ready ? null : _saveImage;
+  VoidCallback? get fullscreen => !ready ? null : _fullscreen;
+
+  void _play() => webview?.callJsMethod('playVideo', []);
+  void _seek(double x) =>
+      webview?.callJsMethod('seekVideo', [x * controller.length.value]);
+  void _rewind() => webview?.callJsMethod('offsetVideo', [-2]);
+  void _forward() => webview?.callJsMethod('offsetVideo', [2]);
+  void _previous() => controller.next(-1);
+  void _next() => controller.next(1);
+
+  void _speedDown() => _changeSpeed(videoData!.speed - 0.25);
+  void _speedUp() => _changeSpeed(videoData!.speed + 0.25);
+  void _speedReset() => _changeSpeed(1.00);
+  void _changeSpeed(double s) => webview?.callJsMethod(
+      'changeSpeed', [videoData!.speed = clampDouble(s, 0.25, 3.0)]);
+
+  void _volumeDown() => _changeVolume((videoData!.volume ~/ 0.01 - 5) / 100);
+  void _volumeUp() => _changeVolume((videoData!.volume ~/ 0.01 + 5) / 100);
+  void _mute() =>
+      webview?.callJsMethod('muteVideo', [videoData!.mute = !videoData!.mute]);
+  void _changeVolume(v) => webview?.callJsMethod('changeVolume',
+      [videoData!.volume = clampDouble((v * 100 ~/ 1) / 100, 0.0, 1.0)]);
+
+  void _saveImage() => webview?.callJsMethod('saveImage', []);
+  void _fullscreen() => webview?.callJsMethod('toggleFullscreen', []);
 }

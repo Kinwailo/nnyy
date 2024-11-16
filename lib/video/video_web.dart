@@ -79,11 +79,11 @@ class VideoWebControl extends HookWidget {
   Widget build(BuildContext context) {
     final controller = VideoController.i;
     final videoData = controller.videoData.value;
+    final actions = controller.webActions;
     final volumeHint = useState(1.0);
     final progressHint = useState(1.0);
     final current = controller.current.value / controller.length.value;
     final buffered = controller.buffered.value / controller.length.value;
-    final action = useMemoized(() => VideoWebAction());
     useListenable(videoData);
     useListenable(controller.paused);
     useListenable(controller.current);
@@ -109,7 +109,7 @@ class VideoWebControl extends HookWidget {
                 value: current,
                 value2: buffered,
                 onHover: !ready ? null : (x) => progressHint.value = x,
-                onTap: action.seek,
+                onTap: actions.seek,
               ),
             ),
           ),
@@ -118,20 +118,20 @@ class VideoWebControl extends HookWidget {
             children: [
               VideoWebButton(
                   controller.paused.value ? Icons.play_arrow : Icons.pause,
-                  onPressed: action.play),
+                  onPressed: actions.play),
               const SizedBox(width: 8),
-              VideoWebButton(Icons.skip_previous, onPressed: action.previous),
-              VideoWebButton(Icons.fast_rewind, onPressed: action.rewind),
-              VideoWebButton(Icons.fast_forward, onPressed: action.forward),
-              VideoWebButton(Icons.skip_next, onPressed: action.next),
+              VideoWebButton(Icons.skip_previous, onPressed: actions.previous),
+              VideoWebButton(Icons.fast_rewind, onPressed: actions.rewind),
+              VideoWebButton(Icons.fast_forward, onPressed: actions.forward),
+              VideoWebButton(Icons.skip_next, onPressed: actions.next),
               const SizedBox(width: 16),
               if (ready) const VideoWebPosition(),
               const Spacer(),
-              VideoWebButton(Icons.remove, onPressed: action.speedDown),
+              VideoWebButton(Icons.remove, onPressed: actions.speedDown),
               TextButton(
-                  onPressed: action.speedReset,
+                  onPressed: actions.speedReset,
                   child: Text('${videoData!.speed.toStringAsFixed(2)}x')),
-              VideoWebButton(Icons.add, onPressed: action.speedUp),
+              VideoWebButton(Icons.add, onPressed: actions.speedUp),
               const SizedBox(width: 16),
               SizedBox(
                 width: 60,
@@ -142,7 +142,7 @@ class VideoWebControl extends HookWidget {
                       height: 20,
                       value: videoData.volume,
                       onHover: !ready ? null : (x) => volumeHint.value = x,
-                      onTap: action.changeVolume,
+                      onTap: actions.changeVolume,
                     )),
               ),
               const SizedBox(width: 4),
@@ -154,12 +154,12 @@ class VideoWebControl extends HookWidget {
                         : '${videoData.volume * 10000 ~/ 100}%',
                 child: VideoWebButton(
                     videoData.mute ? Icons.volume_mute : Icons.volume_up,
-                    onPressed: action.mute),
+                    onPressed: actions.mute),
               ),
-              VideoWebButton(Icons.camera_alt, onPressed: action.saveImage),
+              VideoWebButton(Icons.camera_alt, onPressed: actions.saveImage),
               VideoWebButton(Icons.settings,
                   onPressed: controller.toggleSettings),
-              VideoWebButton(Icons.fullscreen, onPressed: action.fullscreen),
+              VideoWebButton(Icons.fullscreen, onPressed: actions.fullscreen),
             ],
           ),
         ],
@@ -185,53 +185,6 @@ class VideoWebButton extends HookWidget {
   }
 }
 
-class VideoWebAction {
-  VideoController get controller => VideoController.i;
-  WebViewXController? get webview => controller.webview;
-  bool get ready => controller.state.value == VideoState.ready;
-  NnyyVideoData? get videoData => controller.videoData.value;
-
-  VoidCallback? get play =>
-      !ready ? null : () => webview?.callJsMethod('playVideo', []);
-  ValueSetter<double>? get seek => !ready
-      ? null
-      : (x) =>
-          webview?.callJsMethod('seekVideo', [x * controller.length.value]);
-  VoidCallback? get rewind =>
-      !ready ? null : () => webview?.callJsMethod('offsetVideo', [-2]);
-  VoidCallback? get forward =>
-      !ready ? null : () => webview?.callJsMethod('offsetVideo', [2]);
-  VoidCallback? get previous => !ready ? null : () => controller.next(-1);
-  VoidCallback? get next => !ready ? null : () => controller.next(1);
-  VoidCallback? get speedDown =>
-      !ready ? null : () => changeSpeed!(videoData!.speed - 0.25);
-  VoidCallback? get speedUp =>
-      !ready ? null : () => changeSpeed!(videoData!.speed + 0.25);
-  VoidCallback? get speedReset => !ready ? null : () => changeSpeed!(1.00);
-  ValueSetter<double>? get changeSpeed => !ready
-      ? null
-      : (double s) => webview?.callJsMethod(
-          'changeSpeed', [videoData!.speed = clampDouble(s, 0.25, 3.0)]);
-  VoidCallback? get volumeDown => !ready
-      ? null
-      : () => changeVolume!(((videoData!.volume * 100 - 5) ~/ 1) / 100);
-  VoidCallback? get volumeUp => !ready
-      ? null
-      : () => changeVolume!(((videoData!.volume * 100 + 5) ~/ 1) / 100);
-  VoidCallback? get mute => !ready
-      ? null
-      : () => webview
-          ?.callJsMethod('muteVideo', [videoData!.mute = !videoData!.mute]);
-  ValueSetter<double>? get changeVolume => !ready
-      ? null
-      : (v) => webview?.callJsMethod('changeVolume',
-          [videoData!.volume = clampDouble((v * 100 ~/ 1) / 100, 0.0, 1.0)]);
-  VoidCallback? get saveImage =>
-      !ready ? null : () => webview?.callJsMethod('saveImage', []);
-  VoidCallback? get fullscreen =>
-      !ready ? null : () => webview?.callJsMethod('toggleFullscreen', []);
-}
-
 class VideoWebShortcut extends HookWidget {
   const VideoWebShortcut({super.key, required this.child});
 
@@ -240,28 +193,11 @@ class VideoWebShortcut extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final controller = VideoController.i;
-    final action = useMemoized(() => VideoWebAction());
     useListenable(NnyyData.data);
     final ready = useListenableSelector(
         controller.state, () => controller.state.value == VideoState.ready);
     return CallbackShortcuts(
-      bindings: !kIsWeb || !ready
-          ? {}
-          : {
-              NnyyData.data.shortcutPlay: action.play!,
-              NnyyData.data.shortcutPrevious: action.previous!,
-              NnyyData.data.shortcutNext: action.next!,
-              NnyyData.data.shortcutRewind: action.rewind!,
-              NnyyData.data.shortcutForward: action.forward!,
-              NnyyData.data.shortcutSpeedDown: action.speedDown!,
-              NnyyData.data.shortcutSpeedUp: action.speedUp!,
-              NnyyData.data.shortcutSpeedReset: action.speedReset!,
-              NnyyData.data.shortcutVolumeDown: action.volumeDown!,
-              NnyyData.data.shortcutVolumeUp: action.volumeUp!,
-              NnyyData.data.shortcutMute: action.mute!,
-              NnyyData.data.shortcutSaveImage: action.saveImage!,
-              NnyyData.data.shortcutFullscreen: action.fullscreen!,
-            },
+      bindings: !kIsWeb || !ready ? {} : controller.webShortcutActions,
       child: child,
     );
   }

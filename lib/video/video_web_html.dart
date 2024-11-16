@@ -149,7 +149,7 @@ const String html = r"""<!DOCTYPE html>
         .progress.buffer {
             opacity: 0.5;
             color: #000;
-            background-color: #f8e80a;
+            background-color: #fffcd6;
         }
 
         .progress.value {
@@ -270,6 +270,7 @@ const String html = r"""<!DOCTYPE html>
 
         container.onclick = (e) => playVideo();
         container.ondblclick = (e) => toggleFullscreen();
+        document.onkeydown = (e) => dartCallback(`key:${e.code},${e.ctrlKey},${e.shiftKey},${e.altKey}`);
 
         setupButtonEvent("play", (e) => playVideo());
         setupButtonEvent("pause", (e) => playVideo());
