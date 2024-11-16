@@ -61,13 +61,11 @@ class VideoWebOverlay extends HookWidget {
   Widget build(BuildContext context) {
     final controller = VideoController.i;
     return ExcludeFocus(
-      child: WebViewAware(
-        child: SizedBox.expand(
-          child: GestureDetector(
-            onTap: () => controller.webview?.callJsMethod('playVideo', []),
-            onDoubleTap: () =>
-                controller.webview?.callJsMethod('toggleFullscreen', []),
-          ),
+      child: SizedBox.expand(
+        child: GestureDetector(
+          onTap: () => controller.webview?.callJsMethod('playVideo', []),
+          onDoubleTap: () =>
+              controller.webview?.callJsMethod('toggleFullscreen', []),
         ),
       ),
     );
