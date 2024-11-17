@@ -364,7 +364,9 @@ class NnyyVideoData extends ChangeNotifier {
 }
 
 class NnyyProgressCollection extends ChangeNotifier {
-  NnyyProgressCollection._(this.id, {required this.cloud});
+  NnyyProgressCollection._(this.id, {required this.cloud}) {
+    eps.map((e) => this[e]).toList();
+  }
 
   final int id;
   final bool cloud;
