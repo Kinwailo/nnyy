@@ -122,7 +122,6 @@ class _Filter extends HookWidget {
           },
           child: Row(
             children: [
-              const SizedBox(width: 8),
               FocusTraversalOrder(
                 order: const NumericFocusOrder(0),
                 child: NnyySelectButton(
