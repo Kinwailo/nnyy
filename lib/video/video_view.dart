@@ -65,30 +65,16 @@ class VideoView extends HookWidget {
       },
       child: SafeArea(
         child: Scaffold(
-          body: FocusTraversalGroup(
-            policy: ReadingOrderTraversalPolicy(
-              requestFocusCallback: (node,
-                      {alignment, alignmentPolicy, curve, duration}) =>
-                  FocusTraversalPolicy.defaultTraversalRequestFocusCallback(
-                node,
-                alignment: alignment,
-                alignmentPolicy: alignmentPolicy,
-                curve: curve,
-                duration: Durations.short4,
-              ),
-            ),
-            child: IndexedStack(
-              index: controller.fullscreen.value && !kIsWeb ? 1 : 0,
-              children: [
-                controller.detail.value == null
-                    ? const Center(child: CircularProgressIndicator())
-                    : MediaQuery.of(context).orientation ==
-                            Orientation.landscape
-                        ? const _VideoDetail()
-                        : const _VideoDetailVertical(),
-                unsupported ? const SizedBox.shrink() : const VideoPlay(),
-              ],
-            ),
+          body: IndexedStack(
+            index: controller.fullscreen.value && !kIsWeb ? 1 : 0,
+            children: [
+              controller.detail.value == null
+                  ? const Center(child: CircularProgressIndicator())
+                  : MediaQuery.of(context).orientation == Orientation.landscape
+                      ? const _VideoDetail()
+                      : const _VideoDetailVertical(),
+              unsupported ? const SizedBox.shrink() : const VideoPlay(),
+            ],
           ),
         ),
       ),
@@ -103,6 +89,7 @@ class _VideoDetail extends HookWidget {
   Widget build(BuildContext context) {
     final controller = VideoController.i;
     final detail = useValueListenable(controller.detail)!;
+    useAutomaticKeepAlive();
     useListenable(controller.sites);
     return NnyyFocusGroup(
       child: VideoWebShortcut(
@@ -172,6 +159,7 @@ class _VideoDetailVertical extends HookWidget {
   Widget build(BuildContext context) {
     final controller = VideoController.i;
     final detail = useValueListenable(controller.detail)!;
+    useAutomaticKeepAlive();
     useListenable(controller.sites);
     return VideoWebShortcut(
       child: Focus(

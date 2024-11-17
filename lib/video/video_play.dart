@@ -24,6 +24,7 @@ class VideoPlay extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final controller = VideoController.i;
+    useAutomaticKeepAlive();
     useListenable(controller.fullscreen);
     useListenable(controller.state);
     final action =
@@ -44,10 +45,12 @@ class VideoPlay extends HookWidget {
         ButtonActivateIntent: action,
         DirectionalFocusIntent: dir,
       },
-      child: Center(
-        child: controller.state.value != VideoState.ready
-            ? const CircularProgressIndicator()
-            : const _VideoControls(),
+      child: ExcludeFocus(
+        child: Center(
+          child: controller.state.value != VideoState.ready
+              ? const CircularProgressIndicator()
+              : const _VideoControls(),
+        ),
       ),
     );
   }
@@ -121,10 +124,7 @@ class _VideoTitle extends HookWidget {
       top: 4,
       child: Row(
         children: [
-          ExcludeFocus(
-            child: IconButton(
-                icon: const BackButtonIcon(), onPressed: controller.stop),
-          ),
+          IconButton(icon: const BackButtonIcon(), onPressed: controller.stop),
           Text(
             '${detail!.info.title} $ep',
             style: Theme.of(context).textTheme.titleLarge,

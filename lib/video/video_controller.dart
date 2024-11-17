@@ -19,7 +19,9 @@ class VideoController {
   VideoController._() {
     FocusManager.instance.addListener(() {
       var focus = FocusManager.instance.primaryFocus;
-      if (focus.runtimeType == FocusNode) focusNow = focus;
+      if (focus.runtimeType == FocusNode && !_fullscreen.value) {
+        focusNow = focus;
+      }
     });
   }
 
@@ -129,19 +131,20 @@ class VideoController {
 
   void _enterFullScreen() {
     if (unsupported) return;
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
-    WakelockPlus.enable();
     _fullscreen.value = true;
     focusView = focusNow;
+    focusView?.unfocus();
     focusPlayer.requestFocus();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
+    WakelockPlus.enable();
   }
 
   void _exitFullScreen() {
     if (unsupported) return;
+    focusView?.requestFocus();
+    _fullscreen.value = false;
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     WakelockPlus.disable();
-    _fullscreen.value = false;
-    focusView?.requestFocus();
   }
 
   void toggleFullScreen() {
