@@ -85,7 +85,7 @@ class VideoView extends HookWidget {
                     : MediaQuery.of(context).orientation ==
                             Orientation.landscape
                         ? const _VideoDetail()
-                        : const _VideoDetailV(),
+                        : const _VideoDetailVertical(),
                 unsupported ? const SizedBox.shrink() : const VideoPlay(),
               ],
             ),
@@ -165,8 +165,8 @@ class _VideoDetail extends HookWidget {
   }
 }
 
-class _VideoDetailV extends HookWidget {
-  const _VideoDetailV();
+class _VideoDetailVertical extends HookWidget {
+  const _VideoDetailVertical();
 
   @override
   Widget build(BuildContext context) {
@@ -180,10 +180,12 @@ class _VideoDetailV extends HookWidget {
         child: ListView(
           children: [
             const _VideoTitle(),
-            const Row(
+            Row(
               children: [
-                SizedBox(width: 200, child: _VideoCover()),
-                Expanded(child: _VideoInfo()),
+                const Expanded(child: _VideoCover()),
+                ConstrainedBox(
+                    constraints: const BoxConstraints(minWidth: 200),
+                    child: const _VideoInfo()),
               ],
             ),
             ExcludeFocus(child: SelectionArea(child: Text(detail.intro))),
@@ -275,9 +277,8 @@ class _VideoCover extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final detail = VideoController.i.detail.value!;
-    return SizedBox(
-      width: 200,
-      height: 300,
+    return AspectRatio(
+      aspectRatio: 2.0 / 3.0,
       child: VideoCard.coverOnly(detail.info),
     );
   }
