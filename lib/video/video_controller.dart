@@ -277,7 +277,8 @@ class VideoController {
       case 'stop':
         break;
       case 'current':
-        _current.value = int.tryParse(event[1]) ?? 0;
+        _current.value = int.tryParse(event[1].split(',')[0]) ?? 0;
+        _length.value = int.tryParse(event[1].split(',')[1]) ?? 1;
         break;
       case 'meta':
         _length.value = int.tryParse(event[1]) ?? 1;

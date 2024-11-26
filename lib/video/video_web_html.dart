@@ -420,7 +420,7 @@ const String html = r"""<!DOCTYPE html>
                 document.getElementById("time").textContent = `${timeString(time)} / ${timeString(length)}`;
                 var progress = document.getElementById("progress").getElementsByClassName("value")[0];
                 progress.style.width = `${time * 100 / length}%`;
-                dartCallback("current:" + time.toString());
+                dartCallback(`current:${time.toString()},${length.toString()}`);
             }
         }
 
