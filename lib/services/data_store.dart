@@ -118,7 +118,11 @@ class DataStore extends ChangeNotifier {
   static Future<void> saveOnCloud() async {
     if (!isCloudReady) return;
     _changedSinceSync.value = {};
-    await _cloud!.write(_cloudData);
+    var data = {
+      for (var e in _cloudData.entries.where((e) => e.value.isNotEmpty))
+        e.key: e.value
+    };
+    await _cloud!.write(data);
   }
 
   static Future<void> deleteOnCloud() async {

@@ -202,7 +202,8 @@ class NnyyData extends ChangeNotifier {
 
   static Future<void> _sync() async {
     await DataStore.loadOnCloud();
-    for (var n in {...DataStore.list(), ...DataStore.list(cloud: true)}) {
+    var list = {...DataStore.list(), ...DataStore.list(cloud: true)};
+    for (var n in list) {
       if (n == name) await data.sync();
       if (extension(n) == NnyyVideoData.name) {
         final id = int.tryParse(basenameWithoutExtension(n));
@@ -321,11 +322,6 @@ class NnyyVideoData extends ChangeNotifier {
 
   Future<void> sync() async {
     final cloudData = NnyyVideoData._(id, cloud: true);
-    if (cloudData.isOutdated && !cloudData.fav) {
-      DataStore.store('$id$name').delete(cloud: true);
-      DataStore.store('$id${NnyyProgressData.name}').delete(cloud: true);
-      return;
-    }
 
     final toCloud = datetime.isAfter(cloudData.datetime);
     final from = toCloud ? this : cloudData;
@@ -349,9 +345,13 @@ class NnyyVideoData extends ChangeNotifier {
       to.data = to.data.update(from.data);
     }
 
-    if ((toCloud ? cloudProgress : progress).isEmpty) {
-      if (!to.fav) DataStore.store('$id$name').delete(cloud: toCloud);
-      DataStore.store('$id${NnyyProgressData.name}').delete(cloud: toCloud);
+    if (cloudProgress.isEmpty) {
+      if (!cloudData.fav) DataStore.store('$id$name').delete(cloud: true);
+      DataStore.store('$id${NnyyProgressData.name}').delete(cloud: true);
+    }
+    if (cloudData.isOutdated && !cloudData.fav) {
+      DataStore.store('$id$name').delete(cloud: true);
+      DataStore.store('$id${NnyyProgressData.name}').delete(cloud: true);
     }
   }
 
