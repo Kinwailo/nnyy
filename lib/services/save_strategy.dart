@@ -36,8 +36,6 @@ class SaveStrategy implements PopEntry {
 
   @override
   final ValueNotifier<bool> canPopNotifier = ValueNotifier(false);
-  @override
-  late final onPopInvoked = _popInvoked;
 
   static void _save() {
     NnyyData.saveAll();
@@ -123,7 +121,13 @@ class SaveStrategy implements PopEntry {
     }
   }
 
-  void _popInvoked(bool didPop) {
+  @override
+  void onPopInvoked(bool didPop) {
+    if (HomeController.i.canPop.value) i._syncOnExit(pop: true);
+  }
+
+  @override
+  void onPopInvokedWithResult(bool didPop, result) {
     if (HomeController.i.canPop.value) i._syncOnExit(pop: true);
   }
 

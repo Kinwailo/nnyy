@@ -50,7 +50,7 @@ class VideoView extends HookWidget {
     useListenable(controller.error);
     return PopScope(
       canPop: !controller.fullscreen.value,
-      onPopInvoked: (didPop) async {
+      onPopInvokedWithResult: (didPop, _) async {
         if (didPop) {
           controller.dispose();
           NnyyData.saveAll();

@@ -64,7 +64,7 @@ class HomeView extends HookWidget {
       ignoring: SaveStrategy.i.syncingOnExit.value,
       child: PopScope(
         canPop: home.canPop.value,
-        onPopInvoked: (didPop) async {
+        onPopInvokedWithResult: (didPop, _) async {
           if (didPop) {
             NnyyData.saveAll();
             return;
@@ -83,7 +83,7 @@ class HomeView extends HookWidget {
                     child: const _Filter()),
               ),
               backgroundColor: colorScheme.onPrimaryFixed
-                  .withOpacity(kIsWeb || home.canPop.value ? 1.0 : 0.3),
+                  .withValues(alpha: kIsWeb || home.canPop.value ? 1.0 : 0.3),
               actions: [
                 Opacity(
                   opacity: kIsWeb || home.canPop.value ? 1.0 : 0.3,

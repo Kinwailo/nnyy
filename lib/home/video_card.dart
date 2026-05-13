@@ -123,7 +123,7 @@ class VideoCard extends HookWidget {
                         ),
                         _OutlineText(
                           strokeWidth: 2,
-                          strokeColor: Colors.black.withOpacity(0.6),
+                          strokeColor: Colors.black.withValues(alpha: 0.6),
                           child: Text(' ${info.rate ?? ''}'),
                         ),
                       ],
@@ -135,7 +135,7 @@ class VideoCard extends HookWidget {
                     right: 4,
                     child: _OutlineText(
                       strokeWidth: 2,
-                      strokeColor: Colors.black.withOpacity(0.6),
+                      strokeColor: Colors.black.withValues(alpha: 0.6),
                       child: Text(
                         '${info.year ?? ''}\n${info.country}',
                         textAlign: TextAlign.right,
@@ -158,7 +158,7 @@ class VideoCard extends HookWidget {
                       alignment: Alignment.bottomCenter,
                       child: _OutlineText(
                         strokeWidth: 2,
-                        strokeColor: Colors.black.withOpacity(0.6),
+                        strokeColor: Colors.black.withValues(alpha: 0.6),
                         child: Text(
                           info.title,
                           maxLines: 2,

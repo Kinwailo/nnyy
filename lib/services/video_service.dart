@@ -163,7 +163,9 @@ class VideoService {
 
     final contentType = resp.headers.value(Headers.contentTypeHeader);
     if (contentType == null) return Future.error(respfail);
-    if (!contentType.startsWith('text/html')) return Future.error(respfail);
+    if (!['text/html', 'application/json'].contains(contentType)) {
+      return Future.error(respfail);
+    }
 
     final names = <String, int>{};
     String getName(String site) {
@@ -173,7 +175,9 @@ class VideoService {
     }
 
     try {
-      final list = const JsonCodec().decode(resp.data)['video_plays'] as List;
+      final list = contentType == 'text/html'
+          ? const JsonCodec().decode(resp.data)['video_plays'] as List
+          : resp.data['video_plays'] as List;
       final sites = {
         for (var e in list.cast<Map>())
           getName(e['src_site']!): '${e['play_data']!}'

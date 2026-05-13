@@ -167,7 +167,7 @@ class NnyyData extends ChangeNotifier {
         .where((e) => extension(e) == NnyyVideoData.name)
         .map((e) => basenameWithoutExtension(e))
         .map((e) => int.tryParse(e))
-        .whereNotNull()
+        .nonNulls
         .map((e) => videos[e])
         .where((e) => e.isOutdated)
         .forEach((e) => e.delete());
