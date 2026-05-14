@@ -28,6 +28,7 @@ dependencies:
   googleapis: ^13.2.0
   google_sign_in_web: ^0.12.4+2
   google_sign_in_dartio: ^0.3.0
+  flutter_cors_image: ^0.3.13
 
 dev_dependencies:
   flutter_test:

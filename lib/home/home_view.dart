@@ -9,8 +9,8 @@ import '../widgets/nnyy_search_box.dart';
 import '../widgets/nnyy_focus.dart';
 import '../widgets/nnyy_select_button.dart';
 import 'home_controller.dart';
-import 'video_card.dart';
 import 'more_card.dart';
+import 'video_card.dart' if (dart.library.html) 'web_video_card.dart';
 
 class HomeView extends HookWidget {
   const HomeView({super.key});

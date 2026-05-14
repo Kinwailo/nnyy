@@ -1,6 +1,4 @@
-import 'dart:io';
-
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_cors_image/flutter_cors_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:icon_decoration/icon_decoration.dart';
@@ -69,37 +67,30 @@ class VideoCard extends HookWidget {
               children: [
                 Padding(
                   padding: EdgeInsets.only(bottom: coverOnly ? 0 : 24),
-                  child: CachedNetworkImage(
-                    imageUrl: info.cover,
-                    httpHeaders: const {
-                      HttpHeaders.userAgentHeader: VideoService.userAgent
-                    },
-                    imageBuilder: (context, imageProvider) => DecoratedBox(
-                      position: DecorationPosition.foreground,
-                      decoration: BoxDecoration(
-                        gradient: !twoLines.value
-                            ? null
-                            : const LinearGradient(
-                                begin: Alignment.center,
-                                end: Alignment.bottomCenter,
-                                colors: <Color>[
-                                  Color(0x00000000),
-                                  Color(0x80000000),
-                                ],
-                              ),
-                      ),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          image: DecorationImage(
-                            image: imageProvider,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
+                  child: DecoratedBox(
+                    position: DecorationPosition.foreground,
+                    decoration: BoxDecoration(
+                      gradient: !twoLines.value
+                          ? null
+                          : const LinearGradient(
+                              begin: Alignment.center,
+                              end: Alignment.bottomCenter,
+                              colors: <Color>[
+                                Color(0x00000000),
+                                Color(0x80000000),
+                              ],
+                            ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: CustomNetworkImage(
+                        url: info.cover,
+                        fit: BoxFit.cover,
+                        onTap: () {},
+                        webStorageCacheConfig: const WebStorageCacheConfig(),
+                        errorBuilder: (_, __, ___) => const Icon(Icons.error),
                       ),
                     ),
-                    errorWidget: (context, url, error) =>
-                        const Icon(Icons.error),
                   ),
                 ),
                 if (fav || !coverOnly && info.rate != null)
